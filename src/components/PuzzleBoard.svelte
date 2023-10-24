@@ -3,6 +3,7 @@ import PuzzleSection from "./PuzzleSection.svelte";
 import type { SudokuPuzzle } from "$lib/sudoku";
 
 export let puzzle: SudokuPuzzle
+export let activeCell: [number, number] = [0,0]
 </script>
 
 <div class="h-auto max-w-full aspect-square bg-[#ecdad3] shadow-2xl shadow-black/70 border-[8px] border-red-950/20 rounded">

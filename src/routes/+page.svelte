@@ -72,7 +72,7 @@ async function solve() {
     <div class="bg-[#fbf4f5] grow flex p-4">
         <div class="h-full aspect-square bg-[#b7c7cc] rounded-lg grid place-items-center">
             <div class="p-4 h-[50vh] flex justify-center">
-                <PuzzleBoard {puzzle} />
+                <PuzzleBoard {puzzle}  activeCell={[0,0]}/>
             </div>
         </div>
         <div class="h-full flex flex-col justify-end items-center w-full">
