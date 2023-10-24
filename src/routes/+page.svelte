@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { PossibleValue, SudokuPuzzle } from "$lib/sudoku";
 import { solvePuzzle, validateSolution } from "$lib/sudoku";
+import BaseButton from "../components/BaseButton.svelte";
 import PuzzleSection from '../components/PuzzleSection.svelte'
 
 export let puzzle: SudokuPuzzle = [
@@ -86,13 +87,18 @@ async function solve() {
         </div>
         <div class="h-full flex flex-col justify-end items-center w-full">
             <div class="grow w-full items-start justify-top flex flex-col px-4 gap-2">
-                <h2 class="text-lg text-red-950">Algorithms</h2>
+                <h2 class="text-lg text-red-950">Options</h2>
                 <div class="flex gap-4">
                     <div class="h-full aspect-square rounded-full bg-red-950/20 grid place-items-center">1</div>
-                    <p>Backtracking</p>
+                    <p>Speed</p>
+                </div>
+                <div class="flex gap-4 justify-between w-full">
+                    <BaseButton text="slow"></BaseButton>
+                    <BaseButton text="medium"></BaseButton>
+                    <BaseButton text="fast"></BaseButton>
                 </div>
             </div>
-            <button on:click={() => solve()}>Solve</button>
+            <BaseButton onClick={() => solve()} text="Solve"></BaseButton>
         </div>
     </div>
 </div>
