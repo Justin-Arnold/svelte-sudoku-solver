@@ -2,6 +2,7 @@
 import type { SudokuPuzzle } from "$lib/sudoku";
 import { solvePuzzle, validateSolution, type Sudoku } from "$lib/sudoku";
 import BaseButton from "../components/BaseButton.svelte";
+    import PuzzleBoard from "../components/PuzzleBoard.svelte";
 import PuzzleSection from '../components/PuzzleSection.svelte'
 
 
@@ -71,19 +72,7 @@ async function solve() {
     <div class="bg-[#fbf4f5] grow flex p-4">
         <div class="h-full aspect-square bg-[#b7c7cc] rounded-lg grid place-items-center">
             <div class="p-4 h-[50vh] flex justify-center">
-                <div class="h-auto max-w-full aspect-square bg-[#ecdad3] shadow-2xl shadow-black/70 border-[8px] border-red-950/20 rounded">
-                    <div class="grid grid-cols-3 max-w-full h-auto aspect-square shadow-inner shadow-black/30">
-                        <PuzzleSection {puzzle} puzzleSection={{column: 'left', row: 'top'}}/>
-                        <PuzzleSection {puzzle} puzzleSection={{column: 'middle', row: 'top'}}/>
-                        <PuzzleSection {puzzle} puzzleSection={{column: 'right', row: 'top'}}/>
-                        <PuzzleSection {puzzle} puzzleSection={{column: 'left', row: 'middle'}}/>
-                        <PuzzleSection {puzzle} puzzleSection={{column: 'middle', row: 'middle'}}/>
-                        <PuzzleSection {puzzle} puzzleSection={{column: 'right', row: 'middle'}}/>
-                        <PuzzleSection {puzzle} puzzleSection={{column: 'left', row: 'bottom'}}/>
-                        <PuzzleSection {puzzle} puzzleSection={{column: 'middle', row: 'bottom'}}/>
-                        <PuzzleSection {puzzle} puzzleSection={{column: 'right', row: 'bottom'}}/>
-                    </div>
-                </div>
+                <PuzzleBoard {puzzle} />
             </div>
         </div>
         <div class="h-full flex flex-col justify-end items-center w-full">
