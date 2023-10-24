@@ -1,9 +1,8 @@
 <script lang="ts">
 import type { SudokuPuzzle } from "$lib/sudoku";
-import { solvePuzzle, validateSolution } from "$lib/sudoku";
+import { solvePuzzle, validateSolution, type Sudoku } from "$lib/sudoku";
 import BaseButton from "../components/BaseButton.svelte";
 import PuzzleSection from '../components/PuzzleSection.svelte'
-import type { Sudoku } from "../types/sudoku";
 
 
 export let puzzle: SudokuPuzzle = [

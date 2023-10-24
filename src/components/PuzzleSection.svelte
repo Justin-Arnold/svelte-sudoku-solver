@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { SudokuPuzzle } from "$lib/sudoku";
+import type { Sudoku, SudokuPuzzle } from "$lib/sudoku";
     import PuzzleCell from "./PuzzleCell.svelte";
 
 type SectionRow = 'top' | 'middle' | 'bottom'
@@ -53,7 +53,7 @@ function getPuzzleSection(puzzle: SudokuPuzzle, sectionPlacement: SectionPlaceme
             break
     }
 
-    let section = [[0,0,0],[0,0,0],[0,0,0]]
+    let section: Sudoku.CellValue[][] = [[0,0,0],[0,0,0],[0,0,0]]
 
     for(let row = rowStart; row <= rowEnd; row++) {
         for(let col = colStart; col <= colEnd; col++) {

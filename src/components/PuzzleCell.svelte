@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { Sudoku } from "../types/sukoku";
+import type { Sudoku } from "$lib/sudoku";
 
-export let value: Sudoku.CellValue
+export let value: Sudoku.CellValue<''> = ''
 </script>
 
 <input value={value} />
