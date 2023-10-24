@@ -70,12 +70,12 @@ async function solve() {
         <h1 class="font-extralight text-3xl">🍙 Solved</h1>
     </div>
     <div class="bg-[#fbf4f5] grow flex p-4">
-        <div class="h-full aspect-square bg-[#b7c7cc] rounded-lg grid place-items-center">
+        <div class="h-full grow bg-[#b7c7cc] rounded-lg grid place-items-center">
             <div class="p-4 h-[50vh] flex justify-center">
                 <PuzzleBoard {puzzle}  activeCell={[0,0]}/>
             </div>
         </div>
-        <div class="h-full flex flex-col justify-end items-center w-full">
+        <div class="h-full flex flex-col justify-end items-center w-fit shrink-0">
             <div class="grow w-full items-start justify-top flex flex-col px-4 gap-2">
                 <h2 class="text-lg text-red-950">Options</h2>
                 <div class="flex gap-4">
