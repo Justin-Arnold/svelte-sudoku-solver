@@ -1,5 +1,7 @@
 <script lang="ts">
-export let value: string | number = ''
+import type { Sudoku } from "../types/sukoku";
+
+export let value: Sudoku.CellValue
 </script>
 
 <input value={value} />

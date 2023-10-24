@@ -1,8 +1,10 @@
 <script lang="ts">
-import type { PossibleValue, SudokuPuzzle } from "$lib/sudoku";
+import type { SudokuPuzzle } from "$lib/sudoku";
 import { solvePuzzle, validateSolution } from "$lib/sudoku";
 import BaseButton from "../components/BaseButton.svelte";
 import PuzzleSection from '../components/PuzzleSection.svelte'
+import type { Sudoku } from "../types/sudoku";
+
 
 export let puzzle: SudokuPuzzle = [
     [7, 0, 0, 0, 0, 4, 0, 9, 0],
@@ -42,7 +44,7 @@ async function solve() {
             cellPossible = [row, col]
         },
         (row: number, col: number, value) => {
-            puzzle[row][col] = value as PossibleValue
+            puzzle[row][col] = value as Sudoku.CellValue
         }
     )
 
