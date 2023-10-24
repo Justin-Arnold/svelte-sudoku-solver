@@ -1,0 +1,12 @@
+<script lang="ts">
+export let value: string | number = ''
+</script>
+
+<input value={value} />
+
+<style>
+input {
+    @apply shadow-inner bg-[#ece1dd] text-center font-bold overflow-hidden text-lg border border-red-950/20;
+}
+
+</style>

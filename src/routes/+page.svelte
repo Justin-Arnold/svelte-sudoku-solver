@@ -140,13 +140,4 @@ async function solve() {
         flex-direction: column;
         align-items: center;
     }
-
-    button {
-        margin-top: 20px;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #000;
-        background-color: #fff;
-        cursor: pointer;
-    }
 </style>

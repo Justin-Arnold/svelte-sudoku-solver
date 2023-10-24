@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { SudokuPuzzle } from "$lib/sudoku";
+    import PuzzleCell from "./PuzzleCell.svelte";
 
 type SectionRow = 'top' | 'middle' | 'bottom'
 type SectionColumn = 'left' | 'middle' | 'right'
@@ -65,21 +66,13 @@ function getPuzzleSection(puzzle: SudokuPuzzle, sectionPlacement: SectionPlaceme
 </script>
 
 <div class="grid grid-cols-3 border border-red-950/80 overflow-hidden">
-    <input value={getPuzzleSection(puzzle, puzzleSection)[0][0] || ''}/>
-    <input value={getPuzzleSection(puzzle, puzzleSection)[0][1] || ''}/>
-    <input value={getPuzzleSection(puzzle, puzzleSection)[0][2] || ''}/>
-    <input value={getPuzzleSection(puzzle, puzzleSection)[1][0] || ''}/>
-    <input value={getPuzzleSection(puzzle, puzzleSection)[1][1] || ''}/>
-    <input value={getPuzzleSection(puzzle, puzzleSection)[1][2] || ''}/>
-    <input value={getPuzzleSection(puzzle, puzzleSection)[2][0] || ''}/>
-    <input value={getPuzzleSection(puzzle, puzzleSection)[2][1] || ''}/>
-    <input value={getPuzzleSection(puzzle, puzzleSection)[2][2] || ''}/>
+    <PuzzleCell value={getPuzzleSection(puzzle, puzzleSection)[0][0] || ''}/>
+    <PuzzleCell value={getPuzzleSection(puzzle, puzzleSection)[0][1] || ''}/>
+    <PuzzleCell value={getPuzzleSection(puzzle, puzzleSection)[0][2] || ''}/>
+    <PuzzleCell value={getPuzzleSection(puzzle, puzzleSection)[1][0] || ''}/>
+    <PuzzleCell value={getPuzzleSection(puzzle, puzzleSection)[1][1] || ''}/>
+    <PuzzleCell value={getPuzzleSection(puzzle, puzzleSection)[1][2] || ''}/>
+    <PuzzleCell value={getPuzzleSection(puzzle, puzzleSection)[2][0] || ''}/>
+    <PuzzleCell value={getPuzzleSection(puzzle, puzzleSection)[2][1] || ''}/>
+    <PuzzleCell value={getPuzzleSection(puzzle, puzzleSection)[2][2] || ''}/>
 </div>
-
-<style>
-
-input {
-    @apply shadow-inner bg-[#ece1dd] text-center font-bold overflow-hidden text-lg border border-red-950/20;
-}
-
-</style>
