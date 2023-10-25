@@ -1,9 +1,11 @@
 <script lang="ts">
-import type { SudokuPuzzle, Sudoku, GameBoardSection } from "$lib/sudoku";
+import type { Sudoku } from "$lib/sudoku";
+    import { get } from "svelte/store";
 import PuzzleSection from "./PuzzleSection.svelte";
 
-export let puzzle: SudokuPuzzle
+export let puzzle: Sudoku.Puzzle2D
 export let activeCell: [number, number]
+export let emptyCellBeingChecked: [number, number]
 
 $: getActiveCellForSectionByIndex = (index: number) => {
 
@@ -16,6 +18,17 @@ $: getActiveCellForSectionByIndex = (index: number) => {
     return ac
 }
 
+$: getEmptyCellBeingCheckedForSectionByIndex = (index: number) => {
+
+    let ec = null
+
+    if (emptyCellBeingChecked[0] === index) {
+        ec = emptyCellBeingChecked[1]
+    }
+
+    return ec
+}
+
 type SectionRow = 'top' | 'middle' | 'bottom'
 type SectionColumn = 'left' | 'middle' | 'right'
 
@@ -24,7 +37,7 @@ type SectionPlacement = {
     column: SectionColumn
 }
 
-function getPuzzleSection(puzzle: SudokuPuzzle, sectionPlacement: SectionPlacement): GameBoardSection {
+function getPuzzleSection(puzzle: Sudoku.Puzzle2D, sectionPlacement: SectionPlacement): Sudoku.Section2D {
 
     let rowStart = 0
     let rowEnd = 0
@@ -69,11 +82,11 @@ function getPuzzleSection(puzzle: SudokuPuzzle, sectionPlacement: SectionPlaceme
         }
     }
 
-    return section as GameBoardSection
+    return section as Sudoku.Section2D
 }
 
-function getSectionsFromPuzzle(puzzle: SudokuPuzzle): GameBoardSection[] {
-    const sections: GameBoardSection[] = [
+function getSectionsFromPuzzle(puzzle: Sudoku.Puzzle2D): Sudoku.Section2D[] {
+    const sections: Sudoku.Section2D[] = [
         getPuzzleSection(puzzle, {column: 'left', row: 'top'}),
         getPuzzleSection(puzzle, {column: 'middle', row: 'top'}),
         getPuzzleSection(puzzle, {column: 'right', row: 'top'}),
@@ -93,7 +106,7 @@ function getSectionsFromPuzzle(puzzle: SudokuPuzzle): GameBoardSection[] {
 <div class="h-auto max-w-full aspect-square bg-[#ecdad3] shadow-2xl shadow-black/70 border-[8px] border-red-950/20 rounded">
     <div class="grid grid-cols-3 max-w-full h-auto aspect-square shadow-inner shadow-black/30">
         {#each getSectionsFromPuzzle(puzzle) as section, index}
-            <PuzzleSection values={section} activeCell={getActiveCellForSectionByIndex(index + 1)} />
+            <PuzzleSection values={section} activeCell={getActiveCellForSectionByIndex(index + 1)} checkedCell={getEmptyCellBeingCheckedForSectionByIndex(index + 1)}/>
         {/each}
     </div>
 </div>
