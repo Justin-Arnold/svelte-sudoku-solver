@@ -30,8 +30,7 @@ export let puzzle: SudokuPuzzle = [
 let initialState = JSON.parse(JSON.stringify(puzzle))
 let solvedPuzzle: SudokuPuzzle | null
 
-let emptyCellFinder: Sudoku.CellLocation = {section: 1, position: 1}
-let cellToCheckPossibilities: Array<1|2|3|4|5|6|7|8|9> = []
+let emptyCellFinder: Sudoku.CellLocation & {value: Sudoku.CellValue} = {section: 1, position: 1, value: 0}
 let cellPossible: [number, number] = [0,0]
 
 async function solve() {
@@ -51,7 +50,7 @@ async function solve() {
             },
             onFindPossibleValuesForCell(cell, values) {
                 console.log(`possible values for ${cell.section}, ${cell.position}: ${values}`)
-                cellToCheckPossibilities = values as Array<1|2|3|4|5|6|7|8|9>
+                emptyCellFinder.value = values[0]
             },
         },{delay}
     )

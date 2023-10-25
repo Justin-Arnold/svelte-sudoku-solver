@@ -3,7 +3,7 @@
     import PuzzleSection, {type PuzzleBoardSection } from "./PuzzleSection.svelte";
 
     export let puzzle: Sudoku.Puzzle2D
-    export let emptyCellBeingChecked: Sudoku.CellLocation
+    export let emptyCellBeingChecked: Sudoku.CellLocation & {value: Sudoku.CellValue}
 
     //watch and log emptyCellBeingChecked
 
@@ -81,7 +81,7 @@
             for(let row = rowStart; row <= rowEnd; row++) {
                 for(let col = colStart; col <= colEnd; col++) {
                     section.set(cellIndex as Sudoku.GridLocation, {
-                        value: puzzle[row][col] || '',
+                        value: emptyCellBeingChecked.section === sectionLocation && emptyCellBeingChecked.position === cellIndex ? emptyCellBeingChecked.value ? emptyCellBeingChecked.value : puzzle[row][col] || '' : puzzle[row][col] || '',
                         beingCheckedIfEmpty: emptyCellBeingChecked.section === sectionLocation && emptyCellBeingChecked.position === cellIndex,
                     })
                     cellIndex +=1

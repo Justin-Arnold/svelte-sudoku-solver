@@ -21,7 +21,7 @@ type SolvingEventHooks = {
     findingNextEmptyCell?: (cell: Sudoku.CellLocation) => void,
     onCellPossibilitiesCallback: (row: number, col: number) => void,
     onFoundCallback: (row: number, col: number, value: number) => void,
-    onFindPossibleValuesForCell: (cell: Sudoku.CellLocation, values: number[]) => void
+    onFindPossibleValuesForCell: (cell: Sudoku.CellLocation, values: Sudoku.CellValue[]) => void
 }
 
 export function getCellsPossibleValues(
@@ -87,12 +87,18 @@ export async function solvePuzzle(
 
 
     const possibleValues = getCellsPossibleValues(puzzle, squareToSolve[0], squareToSolve[1])
-    visualizerCallbacks.onFindPossibleValuesForCell({section: 1, position: 3}, possibleValues) //! TODO: fix this - hard coded location for cell
 
 
     for (let i = 0; i < possibleValues.length; i++) {
         let newPuzzleState = JSON.parse(JSON.stringify(puzzle))
         newPuzzleState[squareToSolve[0]][squareToSolve[1]] = possibleValues[i] as PossibleValue
+
+        const cellLocation: Sudoku.CellLocation = {
+            section: Math.floor(squareToSolve[0] / 3) * 3 + Math.floor(squareToSolve[1] / 3) + 1 as Sudoku.SectionLocation,
+            position: (squareToSolve[0] % 3) * 3 + squareToSolve[1] % 3 + 1 as Sudoku.GridLocation
+        }
+
+        visualizerCallbacks.onFindPossibleValuesForCell(cellLocation, [possibleValues[i]])
 
         const filledCells = await fillCells(
             newPuzzleState,
@@ -118,7 +124,6 @@ export async function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
             if (delay > 0) {
-                console.log('finding with delay', delay)
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
             onSquareCheck({
