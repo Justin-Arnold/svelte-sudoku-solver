@@ -6,6 +6,7 @@ import PuzzleSection from "./PuzzleSection.svelte";
 export let puzzle: Sudoku.Puzzle2D
 export let activeCell: [number, number]
 export let emptyCellBeingChecked: [number, number]
+export let possibilities:Array<1|2|3|4|5|6|7|8|9>
 
 $: getActiveCellForSectionByIndex = (index: number) => {
 
@@ -106,7 +107,7 @@ function getSectionsFromPuzzle(puzzle: Sudoku.Puzzle2D): Sudoku.Section2D[] {
 <div class="h-auto max-w-full aspect-square bg-[#ecdad3] shadow-2xl shadow-black/70 border-[8px] border-red-950/20 rounded">
     <div class="grid grid-cols-3 max-w-full h-auto aspect-square shadow-inner shadow-black/30">
         {#each getSectionsFromPuzzle(puzzle) as section, index}
-            <PuzzleSection values={section} activeCell={getActiveCellForSectionByIndex(index + 1)} checkedCell={getEmptyCellBeingCheckedForSectionByIndex(index + 1)}/>
+            <PuzzleSection values={section} activeCell={getActiveCellForSectionByIndex(index + 1)} checkedCell={getEmptyCellBeingCheckedForSectionByIndex(index + 1)} checkedCellPossibilities={possibilities}/>
         {/each}
     </div>
 </div>
