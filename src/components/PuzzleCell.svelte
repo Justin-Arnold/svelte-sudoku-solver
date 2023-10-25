@@ -1,23 +1,29 @@
+<script lang="ts" context="module">
+    export type PuzzleBoardCell = {
+        value: Sudoku.CellValue<''>
+        beingCheckedIfEmpty: boolean
+    };
+</script>
+
 <script lang="ts">
 import type { Sudoku } from "$lib/sudoku";
 
-export let value: Sudoku.CellValue<''> = ''
-export let active: boolean
-export let checked: boolean
+export let cell: PuzzleBoardCell
 
-$: styleString = () => {
-    let classString: string = ''
-    classString += active ? ' !bg-blue-200 ' : ' '
-    classString += checked ?  '!bg-red-200 ' : ' '
-    return classString
+$: dynamicStyleString = () => {
+    switch(true) {
+        case cell.beingCheckedIfEmpty:
+            return '!bg-red-200'
+        default:
+            return ''
+    }
 }
 </script>
 
-<input value={value} class={styleString()}/>
-
-<style>
-input {
-    @apply shadow-inner bg-[#ece1dd] text-center font-bold overflow-hidden text-lg border border-red-950/20;
-}
-
-</style>
+<input
+    value={cell.value}
+    class={
+        'shadow-inner bg-[#ece1dd] text-center font-bold overflow-hidden text-lg border border-red-950/20'
+        + dynamicStyleString()
+    }
+/>

@@ -38,12 +38,12 @@ async function solve() {
     solvedPuzzle = await solvePuzzle(
         puzzle,
         {
-            onCellCheckCallback: (row: number, col: number) => {
+            findingNextEmptyCell: (cell) => {
                 // console.log(`checking ${row}, ${col}`)
-                cellToCheck = [row+1, col+1]
+                cellToCheck = [cell.section, cell.position] //RED
             },
             onCellPossibilitiesCallback: (row: number, col: number ) => {
-                cellPossible = [row+1, col+1]
+                cellPossible = [row+1, col+1] //BLUE
             },
             onFoundCallback: (row: number, col: number, value) => {
                 puzzle[row][col] = value as Sudoku.CellValue
@@ -96,8 +96,8 @@ function setSpeed(speed: number) {
                     <p>Speed</p>
                 </div>
                 <div class="flex gap-4 justify-between w-full">
-                    <BaseButton text="slow"  onClick={() => setSpeed(100)}></BaseButton>
-                    <BaseButton text="medium" onClick={() => setSpeed(20)}></BaseButton>
+                    <BaseButton text="slow"  onClick={() => setSpeed(1000)}></BaseButton>
+                    <BaseButton text="medium" onClick={() => setSpeed(100)}></BaseButton>
                     <BaseButton text="fast" onClick={() => setSpeed(5)}></BaseButton>
                     <BaseButton text="instant" onClick={() => setSpeed(0)}></BaseButton>
                 </div>

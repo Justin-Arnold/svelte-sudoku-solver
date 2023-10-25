@@ -1,14 +1,27 @@
 type FixedLengthArray<T, L extends number> = [T, ...T[]] & { length: L };
 type GridLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 export namespace Sudoku {
+    export enum GridLocation { One = 1,Two,Three,Four,Five,Six,Seven,Eight,Nine }
     export type CellValue<BlankValue = 0> = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | BlankValue;
     export type CellLocation = {
-        section: GridLocation,
+        section: SectionLocation,
         position: GridLocation,
     }
     export type Row2D = [CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue];
     export type Section2D = FixedLengthArray<CellValue, 9>
+    export type SectionLocation = GridLocation
     export type Puzzle2D = [Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D];
+}
+
+/**
+ *  These hooks are meant to visualize the solving process. They are not required for the solver to work.
+ *  Each hook takes a callback where the arguments are the information about the step that is being taken.
+ */
+type SolvingEventHooks = {
+    findingNextEmptyCell?: (cell: Sudoku.CellLocation) => void,
+    onCellPossibilitiesCallback: (row: number, col: number) => void,
+    onFoundCallback: (row: number, col: number, value: number) => void,
+    onFindPossibleValuesForCell: (cell: Sudoku.CellLocation, values: number[]) => void
 }
 
 export function getCellsPossibleValues(
@@ -53,12 +66,7 @@ export function getPossibilities(puzzle: SudokuPuzzle) {
 
 export async function solvePuzzle(
     puzzle: Sudoku.Puzzle2D,
-    visualizerCallbacks: {
-        onCellCheckCallback: (row: number, col: number) => void,
-        onCellPossibilitiesCallback: (row: number, col: number) => void,
-        onFoundCallback: (row: number, col: number, value: number) => void,
-        onFindPossibleValuesForCell: (cell: Sudoku.CellLocation, values: number[]) => void
-    } = {
+    visualizerCallbacks: SolvingEventHooks = {
         onCellCheckCallback: () => {},
         onCellPossibilitiesCallback: () => {},
         onFoundCallback: () => {},
@@ -71,7 +79,7 @@ export async function solvePuzzle(
     }
 ): Promise<Sudoku.Puzzle2D | null> {
 
-    const squareToSolve = await findNextEmptyCell(puzzle, visualizerCallbacks.onCellCheckCallback)
+    const squareToSolve = await findNextEmptyCell(puzzle, visualizerCallbacks.findingNextEmptyCell, options.delay)
 
     if (squareToSolve === null) {
         return puzzle
@@ -85,6 +93,7 @@ export async function solvePuzzle(
     for (let i = 0; i < possibleValues.length; i++) {
         let newPuzzleState = JSON.parse(JSON.stringify(puzzle))
         newPuzzleState[squareToSolve[0]][squareToSolve[1]] = possibleValues[i] as PossibleValue
+
         const filledCells = await fillCells(
             newPuzzleState,
             visualizerCallbacks.onCellPossibilitiesCallback,
@@ -105,9 +114,12 @@ export async function solvePuzzle(
 }
 
 
-export async function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (row: number, col: number) => void) {
+export async function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (row: number, col: number) => void, delay: number = 5) {
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
+            if (delay > 0) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
             onSquareCheck(row, col);
             if (puzzle[row][col] === 0) {
                 return [row, col]
