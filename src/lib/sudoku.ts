@@ -1,7 +1,7 @@
 type FixedLengthArray<T, L extends number> = [T, ...T[]] & { length: L };
 type GridLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 export namespace Sudoku {
-    export enum GridLocation { One = 1,Two,Three,Four,Five,Six,Seven,Eight,Nine }
+    export type GridLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
     export type CellValue<BlankValue = 0> = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | BlankValue;
     export type CellLocation = {
         section: SectionLocation,
@@ -67,7 +67,7 @@ export function getPossibilities(puzzle: SudokuPuzzle) {
 export async function solvePuzzle(
     puzzle: Sudoku.Puzzle2D,
     visualizerCallbacks: SolvingEventHooks = {
-        onCellCheckCallback: () => {},
+        findingNextEmptyCell: cell => void 0,
         onCellPossibilitiesCallback: () => {},
         onFoundCallback: () => {},
         onFindPossibleValuesForCell: () => {}
@@ -114,13 +114,17 @@ export async function solvePuzzle(
 }
 
 
-export async function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (row: number, col: number) => void, delay: number = 5) {
+export async function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (cell: Sudoku.CellLocation) => void, delay: number = 5) {
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
             if (delay > 0) {
+                console.log('finding with delay', delay)
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
-            onSquareCheck(row, col);
+            onSquareCheck({
+                section: Math.floor(row / 3) * 3 + Math.floor(col / 3) + 1 as Sudoku.SectionLocation,
+                position: (row % 3) * 3 + col % 3 + 1 as Sudoku.GridLocation
+            });
             if (puzzle[row][col] === 0) {
                 return [row, col]
             }

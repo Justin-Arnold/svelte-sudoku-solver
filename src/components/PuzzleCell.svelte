@@ -22,8 +22,8 @@ $: dynamicStyleString = () => {
 
 <input
     value={cell.value}
-    class={
-        'shadow-inner bg-[#ece1dd] text-center font-bold overflow-hidden text-lg border border-red-950/20'
-        + dynamicStyleString()
-    }
+    class={[
+        'shadow-inner bg-[#ece1dd] text-center font-bold overflow-hidden text-lg border border-red-950/20',
+        dynamicStyleString()
+    ].join(' ')}
 />

@@ -30,7 +30,7 @@ export let puzzle: SudokuPuzzle = [
 let initialState = JSON.parse(JSON.stringify(puzzle))
 let solvedPuzzle: SudokuPuzzle | null
 
-let cellToCheck: [number, number] = [0,0]
+let emptyCellFinder: Sudoku.CellLocation = {section: 1, position: 1}
 let cellToCheckPossibilities: Array<1|2|3|4|5|6|7|8|9> = []
 let cellPossible: [number, number] = [0,0]
 
@@ -38,9 +38,10 @@ async function solve() {
     solvedPuzzle = await solvePuzzle(
         puzzle,
         {
-            findingNextEmptyCell: (cell) => {
-                // console.log(`checking ${row}, ${col}`)
-                cellToCheck = [cell.section, cell.position] //RED
+            findingNextEmptyCell: cell => {
+                console.log(`finding next empty cell: ${cell.section}, ${cell.position}`)
+                emptyCellFinder.position = cell.position
+                emptyCellFinder.section = cell.section
             },
             onCellPossibilitiesCallback: (row: number, col: number ) => {
                 cellPossible = [row+1, col+1] //BLUE
@@ -94,7 +95,7 @@ function setSpeed(speed: number) {
     <div class="bg-[#fbf4f5] grow flex p-4">
         <div class="h-full grow bg-[#b7c7cc] rounded-lg grid place-items-center">
             <div class="p-4 h-[50vh] flex justify-center">
-                <PuzzleBoard {puzzle}  activeCell={cellPossible} emptyCellBeingChecked={cellToCheck} possibilities={cellToCheckPossibilities}/>
+                <PuzzleBoard {puzzle} emptyCellBeingChecked={emptyCellFinder} />
             </div>
         </div>
         <div class="h-full flex flex-col justify-end items-center w-fit shrink-0">
