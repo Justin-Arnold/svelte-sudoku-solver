@@ -122,7 +122,9 @@ export async function fillCells(
             for (let j = 0; j < 9; j++) {
                 callback(i, j);
                 console.log('filling with delay', delay)
-                await new Promise(resolve => setTimeout(resolve, delay));
+                if (delay > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
                 if (clonedPuzzle[i][j] !== 0) {
                     continue;
                 }

@@ -94,6 +94,7 @@ function setSpeed(speed: number) {
                     <BaseButton text="slow"  onClick={() => setSpeed(100)}></BaseButton>
                     <BaseButton text="medium" onClick={() => setSpeed(20)}></BaseButton>
                     <BaseButton text="fast" onClick={() => setSpeed(5)}></BaseButton>
+                    <BaseButton text="instant" onClick={() => setSpeed(0)}></BaseButton>
                 </div>
             </div>
             <BaseButton onClick={() => solve()} text="Solve"></BaseButton>
