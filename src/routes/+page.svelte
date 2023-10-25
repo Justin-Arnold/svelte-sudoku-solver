@@ -36,19 +36,19 @@ let cellPossible: [number, number] = [0,0]
 async function solve() {
     solvedPuzzle = await solvePuzzle(
         puzzle,
-        (row: number, col: number) => {
-            // console.log(`checking ${row}, ${col}`)
-            cellToCheck = [row+1, col+1]
-        },
-        (row: number, col: number ) => {
-            cellPossible = [row+1, col+1]
-        },
-        (row: number, col: number, value) => {
-            puzzle[row][col] = value as Sudoku.CellValue
-        },
-        delay
+        {
+            onCellCheckCallback: (row: number, col: number) => {
+                // console.log(`checking ${row}, ${col}`)
+                cellToCheck = [row+1, col+1]
+            },
+            onCellPossibilitiesCallback: (row: number, col: number ) => {
+                cellPossible = [row+1, col+1]
+            },
+            onFoundCallback: (row: number, col: number, value) => {
+                puzzle[row][col] = value as Sudoku.CellValue
+            },
+        },{delay}
     )
-
     if(solvedPuzzle === null) {
         alert("This puzzle is unsolvable")
     }

@@ -1,17 +1,13 @@
+type FixedLengthArray<T, L extends number> = [T, ...T[]] & { length: L };
 export namespace Sudoku {
     export type CellValue<BlankValue = 0> = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | BlankValue;
+    export type Row2D = [CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue];
+    export type Section2D = FixedLengthArray<CellValue, 9>
+    export type Puzzle2D = [Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D];
 }
 
-export type SudokuRow = [Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue];
-export type SudokuPuzzle = [SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow];
-
-type FixedLengthArray<T, L extends number> = [T, ...T[]] & { length: L };
-export type GameBoardSection = FixedLengthArray<Sudoku.CellValue, 9>
-
-
-
-export function getCellPossibleValues(
-    puzzle: SudokuPuzzle,
+export function getCellsPossibleValues(
+    puzzle: Sudoku.Puzzle2D,
     row: number,
     column: number
 ){
@@ -51,22 +47,32 @@ export function getPossibilities(puzzle: SudokuPuzzle) {
 }
 
 export async function solvePuzzle(
-    puzzle: SudokuPuzzle,
-    onCellCheckCallback: (row: number, col: number) => void,
-    onCellPossibilitiesCallback: (row: number, col: number) => void,
-    onFoundCallback: (row: number, col: number, value: number) => void,
-    delay: number = 5
-): Promise<SudokuPuzzle | null> {
+    puzzle: Sudoku.Puzzle2D,
+    visualizerCallbacks: {
+        onCellCheckCallback: (row: number, col: number) => void,
+        onCellPossibilitiesCallback: (row: number, col: number) => void,
+        onFoundCallback: (row: number, col: number, value: number) => void,
 
+    } = {
+        onCellCheckCallback: () => {},
+        onCellPossibilitiesCallback: () => {},
+        onFoundCallback: () => {},
+    },
+    options: {
+        delay: number
+    } = {
+        delay: 5
+    }
+): Promise<Sudoku.Puzzle2D | null> {
 
-    const squareToSolve = await findNextZero(puzzle, onCellCheckCallback)
+    const squareToSolve = await findNextEmptyCell(puzzle, visualizerCallbacks.onCellCheckCallback)
 
     if (squareToSolve === null) {
         return puzzle
     }
 
 
-    const possibleValues = getCellPossibleValues(puzzle, squareToSolve[0], squareToSolve[1])
+    const possibleValues = getCellsPossibleValues(puzzle, squareToSolve[0], squareToSolve[1])
 
 
     for (let i = 0; i < possibleValues.length; i++) {
@@ -74,15 +80,14 @@ export async function solvePuzzle(
         newPuzzleState[squareToSolve[0]][squareToSolve[1]] = possibleValues[i] as PossibleValue
         const filledCells = await fillCells(
             newPuzzleState,
-            onCellPossibilitiesCallback,
-            onFoundCallback,
-            delay
+            visualizerCallbacks.onCellPossibilitiesCallback,
+            visualizerCallbacks.onFoundCallback,
+            options.delay
         )
         let result = solvePuzzle(
             filledCells,
-            onCellCheckCallback,
-            onCellPossibilitiesCallback,
-            onFoundCallback
+            visualizerCallbacks,
+            options
         )
         if (result !== null) {
             return result
@@ -93,7 +98,7 @@ export async function solvePuzzle(
 }
 
 
-export async function findNextZero(puzzle: SudokuPuzzle, onSquareCheck: (row: number, col: number) => void) {
+export async function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (row: number, col: number) => void) {
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
             onSquareCheck(row, col);
@@ -129,7 +134,7 @@ export async function fillCells(
                     continue;
                 }
 
-                const possibleValues = getCellPossibleValues(clonedPuzzle, i, j);
+                const possibleValues = getCellsPossibleValues(clonedPuzzle, i, j);
 
                 if (possibleValues.length === 1) {
                     clonedPuzzle[i][j] = possibleValues.pop();
