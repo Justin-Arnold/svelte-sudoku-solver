@@ -1,7 +1,8 @@
 <script lang="ts" context="module">
     export type PuzzleBoardCell = {
         value: Sudoku.CellValue<''>
-        beingCheckedIfEmpty: boolean
+        beingCheckedIfEmpty: boolean,
+        beingCheckedForPossibilities: boolean,
     };
 </script>
 
@@ -12,6 +13,8 @@ export let cell: PuzzleBoardCell
 
 $: dynamicStyleString = () => {
     switch(true) {
+        case cell.beingCheckedForPossibilities:
+            return '!bg-green-200'
         case cell.beingCheckedIfEmpty:
             return '!bg-red-200'
         default:

@@ -31,27 +31,26 @@ let initialState = JSON.parse(JSON.stringify(puzzle))
 let solvedPuzzle: SudokuPuzzle | null
 
 let emptyCellFinder: Sudoku.CellLocation & {value: Sudoku.CellValue} = {section: 1, position: 1, value: 0}
-let cellPossible: [number, number] = [0,0]
+let solveFinder: Sudoku.CellLocation = {section: 1, position: 1}
 
 async function solve() {
     solvedPuzzle = await solvePuzzle(
-        puzzle,
-        {
-            findingNextEmptyCell: cell => {
-                console.log(`finding next empty cell: ${cell.section}, ${cell.position}`)
+        puzzle,{
+            findingNextEmptyCell: cell => { // RED LOCATION
                 emptyCellFinder.position = cell.position
                 emptyCellFinder.section = cell.section
             },
-            onCellPossibilitiesCallback: (row: number, col: number ) => {
-                cellPossible = [row+1, col+1] //BLUE
-            },
-            onFoundCallback: (row: number, col: number, value) => {
-                puzzle[row][col] = value as Sudoku.CellValue
-            },
-            onFindPossibleValuesForCell(cell, values) {
-                console.log(`possible values for ${cell.section}, ${cell.position}: ${values}`)
+            onFindPossibleValuesForCell(cell, values) { //RED VALUE
                 emptyCellFinder.value = values[0]
             },
+            onCellPossibilitiesCallback: cell => { // BLUE LOCATION
+                console.log('ocp', cell)
+                solveFinder.position = cell.position
+                solveFinder.section = cell.section
+            },
+            onFoundCallback: (row: number, col: number, value) => { // UNKNOWN VALUE
+                puzzle[row][col] = value as Sudoku.CellValue
+            }
         },{delay}
     )
     if(solvedPuzzle === null) {
@@ -94,7 +93,7 @@ function setSpeed(speed: number) {
     <div class="bg-[#fbf4f5] grow flex p-4">
         <div class="h-full grow bg-[#b7c7cc] rounded-lg grid place-items-center">
             <div class="p-4 h-[50vh] flex justify-center">
-                <PuzzleBoard {puzzle} emptyCellBeingChecked={emptyCellFinder} />
+                <PuzzleBoard {puzzle} emptyCellBeingChecked={emptyCellFinder} {solveFinder}/>
             </div>
         </div>
         <div class="h-full flex flex-col justify-end items-center w-fit shrink-0">

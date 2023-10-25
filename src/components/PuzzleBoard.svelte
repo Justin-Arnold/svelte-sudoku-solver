@@ -4,6 +4,7 @@
 
     export let puzzle: Sudoku.Puzzle2D
     export let emptyCellBeingChecked: Sudoku.CellLocation & {value: Sudoku.CellValue}
+    export let solveFinder: Sudoku.CellLocation
 
     //watch and log emptyCellBeingChecked
 
@@ -83,6 +84,7 @@
                     section.set(cellIndex as Sudoku.GridLocation, {
                         value: emptyCellBeingChecked.section === sectionLocation && emptyCellBeingChecked.position === cellIndex ? emptyCellBeingChecked.value ? emptyCellBeingChecked.value : puzzle[row][col] || '' : puzzle[row][col] || '',
                         beingCheckedIfEmpty: emptyCellBeingChecked.section === sectionLocation && emptyCellBeingChecked.position === cellIndex,
+                        beingCheckedForPossibilities: solveFinder.section === sectionLocation && solveFinder.position === cellIndex
                     })
                     cellIndex +=1
                 }

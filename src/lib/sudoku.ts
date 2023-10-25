@@ -18,8 +18,8 @@ export namespace Sudoku {
  *  Each hook takes a callback where the arguments are the information about the step that is being taken.
  */
 type SolvingEventHooks = {
-    findingNextEmptyCell?: (cell: Sudoku.CellLocation) => void,
-    onCellPossibilitiesCallback: (row: number, col: number) => void,
+    findingNextEmptyCell: (cell: Sudoku.CellLocation) => void,
+    onCellPossibilitiesCallback: (cell: Sudoku.CellLocation) => void,
     onFoundCallback: (row: number, col: number, value: number) => void,
     onFindPossibleValuesForCell: (cell: Sudoku.CellLocation, values: Sudoku.CellValue[]) => void
 }
@@ -68,7 +68,7 @@ export async function solvePuzzle(
     puzzle: Sudoku.Puzzle2D,
     visualizerCallbacks: SolvingEventHooks = {
         findingNextEmptyCell: cell => void 0,
-        onCellPossibilitiesCallback: () => {},
+        onCellPossibilitiesCallback: cell => void 0,
         onFoundCallback: () => {},
         onFindPossibleValuesForCell: () => {}
     },
@@ -140,7 +140,7 @@ export async function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (
 
 export async function fillCells(
     puzzle: SudokuPuzzle,
-    callback: (row:number, col:number) => void,
+    callback: (cell: Sudoku.CellLocation) => void,
     callback2: (row:number, col:number, value: number) => void,
     delay: number,
     loop = true,
@@ -153,7 +153,10 @@ export async function fillCells(
 
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
-                callback(i, j);
+                callback({
+                    section: Math.floor(i / 3) * 3 + Math.floor(j / 3) + 1 as Sudoku.SectionLocation,
+                    position: (i % 3) * 3 + j % 3 + 1 as Sudoku.GridLocation
+                });
                 console.log('filling with delay', delay)
                 if (delay > 0) {
                     await new Promise(resolve => setTimeout(resolve, delay));
