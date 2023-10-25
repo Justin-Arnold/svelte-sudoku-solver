@@ -3,7 +3,18 @@ import type { SudokuPuzzle, Sudoku, GameBoardSection } from "$lib/sudoku";
 import PuzzleSection from "./PuzzleSection.svelte";
 
 export let puzzle: SudokuPuzzle
-export const activeCell: [number, number] = [0,0]
+export let activeCell: [number, number]
+
+$: getActiveCellForSectionByIndex = (index: number) => {
+
+    let ac = null
+
+    if (activeCell[0] === index) {
+        ac = activeCell[1]
+    }
+
+    return ac
+}
 
 type SectionRow = 'top' | 'middle' | 'bottom'
 type SectionColumn = 'left' | 'middle' | 'right'
@@ -82,7 +93,7 @@ function getSectionsFromPuzzle(puzzle: SudokuPuzzle): GameBoardSection[] {
 <div class="h-auto max-w-full aspect-square bg-[#ecdad3] shadow-2xl shadow-black/70 border-[8px] border-red-950/20 rounded">
     <div class="grid grid-cols-3 max-w-full h-auto aspect-square shadow-inner shadow-black/30">
         {#each getSectionsFromPuzzle(puzzle) as section, index}
-            <PuzzleSection values={section} activeCell={index + 1} />
+            <PuzzleSection values={section} activeCell={getActiveCellForSectionByIndex(index + 1)} />
         {/each}
     </div>
 </div>

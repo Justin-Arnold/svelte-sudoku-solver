@@ -30,7 +30,7 @@ export let puzzle: SudokuPuzzle = [
 let initialState = JSON.parse(JSON.stringify(puzzle))
 let solvedPuzzle: SudokuPuzzle | null
 
-let cellToCheck: [number, number] = [0,0]
+let cellToCheck: [number, number] = [1,1]
 let cellPossible: [number, number] = [0,0]
 
 async function solve() {
@@ -38,10 +38,10 @@ async function solve() {
         puzzle,
         (row: number, col: number) => {
             // console.log(`checking ${row}, ${col}`)
-            cellToCheck = [row, col]
+            cellToCheck = [row+1, col+1]
         },
         (row: number, col: number ) => {
-            cellPossible = [row, col]
+            cellPossible = [row+1, col+1]
         },
         (row: number, col: number, value) => {
             puzzle[row][col] = value as Sudoku.CellValue
@@ -72,7 +72,7 @@ async function solve() {
     <div class="bg-[#fbf4f5] grow flex p-4">
         <div class="h-full grow bg-[#b7c7cc] rounded-lg grid place-items-center">
             <div class="p-4 h-[50vh] flex justify-center">
-                <PuzzleBoard {puzzle}  activeCell={[0,0]}/>
+                <PuzzleBoard {puzzle}  activeCell={cellPossible}/>
             </div>
         </div>
         <div class="h-full flex flex-col justify-end items-center w-fit shrink-0">
