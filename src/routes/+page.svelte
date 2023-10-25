@@ -69,6 +69,15 @@ async function solve() {
 }
 
 let delay = 5
+$:  puzzleString = () => {
+    let tempString = ''
+    for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+            tempString += puzzle[row][col] || '.'
+        }
+    }
+    return tempString
+}
 
 function setSpeed(speed: number) {
     console.log(speed)
@@ -100,6 +109,13 @@ function setSpeed(speed: number) {
                     <BaseButton text="medium" onClick={() => setSpeed(100)}></BaseButton>
                     <BaseButton text="fast" onClick={() => setSpeed(5)}></BaseButton>
                     <BaseButton text="instant" onClick={() => setSpeed(0)}></BaseButton>
+                </div>
+                <div class="flex gap-4 w-full">
+                    <div class="h-full aspect-square rounded-full bg-red-950/20 grid place-items-center">1</div>
+                    <p>Puzzle String</p>
+                </div>
+                <div class="flex gap-4 justify-between w-full">
+                    <input value="{puzzleString()}" class="p-2 rounded w-full shadow-inner bg-[#e8dfdc] shadow-red-950/20" disabled>
                 </div>
             </div>
             <BaseButton onClick={() => solve()} text="Solve"></BaseButton>
