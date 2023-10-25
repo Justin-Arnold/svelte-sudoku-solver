@@ -7,7 +7,7 @@ import PuzzleSection from '../components/PuzzleSection.svelte'
 
 
 export let puzzle: SudokuPuzzle = [
-    [7, 0, 0, 0, 0, 4, 0, 9, 0],
+    [7, 3, 0, 0, 0, 4, 0, 9, 0],
     [8, 0, 2, 9, 7, 3, 0, 0, 0],
     [9, 0, 1, 2, 0, 0, 3, 0, 0],
     [0, 0, 0, 0, 4, 9, 1, 5, 7],
@@ -30,7 +30,7 @@ export let puzzle: SudokuPuzzle = [
 let initialState = JSON.parse(JSON.stringify(puzzle))
 let solvedPuzzle: SudokuPuzzle | null
 
-let cellToCheck: [number, number] = [1,1]
+let cellToCheck: [number, number] = [0,0]
 let cellPossible: [number, number] = [0,0]
 
 async function solve() {
@@ -46,6 +46,9 @@ async function solve() {
             },
             onFoundCallback: (row: number, col: number, value) => {
                 puzzle[row][col] = value as Sudoku.CellValue
+            },
+            onFindPossibleValuesForCell(cell, values) {
+                console.log(`possible values for ${cell.section}, ${cell.position}: ${values}`)
             },
         },{delay}
     )

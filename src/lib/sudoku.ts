@@ -1,6 +1,11 @@
 type FixedLengthArray<T, L extends number> = [T, ...T[]] & { length: L };
+type GridLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 export namespace Sudoku {
     export type CellValue<BlankValue = 0> = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | BlankValue;
+    export type CellLocation = {
+        section: GridLocation,
+        position: GridLocation,
+    }
     export type Row2D = [CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue];
     export type Section2D = FixedLengthArray<CellValue, 9>
     export type Puzzle2D = [Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D];
@@ -52,11 +57,12 @@ export async function solvePuzzle(
         onCellCheckCallback: (row: number, col: number) => void,
         onCellPossibilitiesCallback: (row: number, col: number) => void,
         onFoundCallback: (row: number, col: number, value: number) => void,
-
+        onFindPossibleValuesForCell: (cell: Sudoku.CellLocation, values: number[]) => void
     } = {
         onCellCheckCallback: () => {},
         onCellPossibilitiesCallback: () => {},
         onFoundCallback: () => {},
+        onFindPossibleValuesForCell: () => {}
     },
     options: {
         delay: number
@@ -73,6 +79,7 @@ export async function solvePuzzle(
 
 
     const possibleValues = getCellsPossibleValues(puzzle, squareToSolve[0], squareToSolve[1])
+    visualizerCallbacks.onFindPossibleValuesForCell({section: 1, position: 3}, possibleValues) //! TODO: fix this - hard coded location for cell
 
 
     for (let i = 0; i < possibleValues.length; i++) {
