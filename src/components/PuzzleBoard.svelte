@@ -1,6 +1,6 @@
 <script lang="ts">
+import type { SudokuPuzzle, Sudoku, GameBoardSection } from "$lib/sudoku";
 import PuzzleSection from "./PuzzleSection.svelte";
-import type { SudokuPuzzle, Sudoku } from "$lib/sudoku";
 
 export let puzzle: SudokuPuzzle
 export const activeCell: [number, number] = [0,0]
@@ -13,7 +13,7 @@ type SectionPlacement = {
     column: SectionColumn
 }
 
-function getPuzzleSection(puzzle: SudokuPuzzle, sectionPlacement: SectionPlacement) {
+function getPuzzleSection(puzzle: SudokuPuzzle, sectionPlacement: SectionPlacement): GameBoardSection {
 
     let rowStart = 0
     let rowEnd = 0
@@ -58,20 +58,31 @@ function getPuzzleSection(puzzle: SudokuPuzzle, sectionPlacement: SectionPlaceme
         }
     }
 
-    return section
+    return section as GameBoardSection
+}
+
+function getSectionsFromPuzzle(puzzle: SudokuPuzzle): GameBoardSection[] {
+    const sections: GameBoardSection[] = [
+        getPuzzleSection(puzzle, {column: 'left', row: 'top'}),
+        getPuzzleSection(puzzle, {column: 'middle', row: 'top'}),
+        getPuzzleSection(puzzle, {column: 'right', row: 'top'}),
+        getPuzzleSection(puzzle, {column: 'left', row: 'middle'}),
+        getPuzzleSection(puzzle, {column:'middle', row: 'middle'}),
+        getPuzzleSection(puzzle, {column: 'right', row: 'middle'}),
+        getPuzzleSection(puzzle, {column: 'left', row: 'bottom'}),
+        getPuzzleSection(puzzle, {column: 'middle', row: 'bottom'}),
+        getPuzzleSection(puzzle, {column: 'right', row: 'bottom'})
+    ]
+
+    return sections
+
 }
 </script>
 
 <div class="h-auto max-w-full aspect-square bg-[#ecdad3] shadow-2xl shadow-black/70 border-[8px] border-red-950/20 rounded">
     <div class="grid grid-cols-3 max-w-full h-auto aspect-square shadow-inner shadow-black/30">
-        <PuzzleSection values={getPuzzleSection(puzzle, {column: 'left', row: 'top'})} activeCell={1} />
-        <PuzzleSection values={getPuzzleSection(puzzle, {column: 'middle', row: 'top'})} activeCell={null} />
-        <PuzzleSection values={getPuzzleSection(puzzle, {column: 'right', row: 'top'})} activeCell={null} />
-        <PuzzleSection values={getPuzzleSection(puzzle, {column: 'left', row: 'middle'})} activeCell={null} />
-        <PuzzleSection values={getPuzzleSection(puzzle, {column: 'middle', row: 'middle'})} activeCell={null}/>
-        <PuzzleSection values={getPuzzleSection(puzzle, {column: 'right', row: 'middle'})} activeCell={null} />
-        <PuzzleSection values={getPuzzleSection(puzzle, {column: 'left', row: 'bottom'})} activeCell={null} />
-        <PuzzleSection values={getPuzzleSection(puzzle, {column: 'middle', row: 'bottom'})} activeCell={null} />
-        <PuzzleSection values={getPuzzleSection(puzzle, {column: 'right', row: 'bottom'})} activeCell={null} />
+        {#each getSectionsFromPuzzle(puzzle) as section, index}
+            <PuzzleSection values={section} activeCell={index + 1} />
+        {/each}
     </div>
 </div>

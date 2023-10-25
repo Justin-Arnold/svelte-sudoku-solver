@@ -5,6 +5,8 @@ export namespace Sudoku {
 export type SudokuRow = [Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue, Sudoku.CellValue];
 export type SudokuPuzzle = [SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow, SudokuRow];
 
+type FixedLengthArray<T, L extends number> = [T, ...T[]] & { length: L };
+export type GameBoardSection = FixedLengthArray<Sudoku.CellValue, 9>
 
 
 
