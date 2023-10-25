@@ -45,7 +45,8 @@ async function solve() {
         },
         (row: number, col: number, value) => {
             puzzle[row][col] = value as Sudoku.CellValue
-        }
+        },
+        delay
     )
 
     if(solvedPuzzle === null) {
@@ -60,6 +61,13 @@ async function solve() {
             console.log("This puzzle is not solved")
         }
     }
+}
+
+let delay = 5
+
+function setSpeed(speed: number) {
+    console.log(speed)
+    delay = speed
 }
 
 
@@ -83,9 +91,9 @@ async function solve() {
                     <p>Speed</p>
                 </div>
                 <div class="flex gap-4 justify-between w-full">
-                    <BaseButton text="slow"></BaseButton>
-                    <BaseButton text="medium"></BaseButton>
-                    <BaseButton text="fast"></BaseButton>
+                    <BaseButton text="slow"  onClick={() => setSpeed(100)}></BaseButton>
+                    <BaseButton text="medium" onClick={() => setSpeed(20)}></BaseButton>
+                    <BaseButton text="fast" onClick={() => setSpeed(5)}></BaseButton>
                 </div>
             </div>
             <BaseButton onClick={() => solve()} text="Solve"></BaseButton>

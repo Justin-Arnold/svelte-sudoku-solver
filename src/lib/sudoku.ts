@@ -54,7 +54,8 @@ export async function solvePuzzle(
     puzzle: SudokuPuzzle,
     onCellCheckCallback: (row: number, col: number) => void,
     onCellPossibilitiesCallback: (row: number, col: number) => void,
-    onFoundCallback: (row: number, col: number, value: number) => void
+    onFoundCallback: (row: number, col: number, value: number) => void,
+    delay: number = 5
 ): Promise<SudokuPuzzle | null> {
 
 
@@ -75,6 +76,7 @@ export async function solvePuzzle(
             newPuzzleState,
             onCellPossibilitiesCallback,
             onFoundCallback,
+            delay
         )
         let result = solvePuzzle(
             filledCells,
@@ -107,7 +109,9 @@ export async function fillCells(
     puzzle: SudokuPuzzle,
     callback: (row:number, col:number) => void,
     callback2: (row:number, col:number, value: number) => void,
-    loop = true
+    delay: number,
+    loop = true,
+
 ) {
     const clonedPuzzle = JSON.parse(JSON.stringify(puzzle));
     console.log('filling')
@@ -117,7 +121,8 @@ export async function fillCells(
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
                 callback(i, j);
-                await new Promise(resolve => setTimeout(resolve, 5));
+                console.log('filling with delay', delay)
+                await new Promise(resolve => setTimeout(resolve, delay));
                 if (clonedPuzzle[i][j] !== 0) {
                     continue;
                 }
