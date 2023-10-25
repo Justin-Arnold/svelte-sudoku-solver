@@ -2,9 +2,10 @@
 import type { Sudoku } from "$lib/sudoku";
 
 export let value: Sudoku.CellValue<''> = ''
+export let active: boolean
 </script>
 
-<input value={value} />
+<input value={value} class={active ? '!bg-blue-200' : ''}/>
 
 <style>
 input {
