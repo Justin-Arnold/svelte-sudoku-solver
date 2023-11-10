@@ -57,14 +57,14 @@ export function getPossibilities(puzzle: SudokuPuzzle) {
 
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
-            possibilities[row][col] = getCellPossibleValues(puzzle, row, col)
+            possibilities[row][col] = getCellsPossibleValues(puzzle, row, col)
         }
     }
 
     return possibilities
 }
 
-export async function solvePuzzle(
+export function solvePuzzle(
     puzzle: Sudoku.Puzzle2D,
     visualizerCallbacks: SolvingEventHooks = {
         findingNextEmptyCell: cell => void 0,
@@ -72,14 +72,15 @@ export async function solvePuzzle(
         onFoundCallback: () => {},
         onFindPossibleValuesForCell: () => {}
     },
-    options: {
-        delay: number
-    } = {
-        delay: 5
-    }
-): Promise<Sudoku.Puzzle2D | null> {
+): Sudoku.Puzzle2D | null {
 
-    const squareToSolve = await findNextEmptyCell(puzzle, visualizerCallbacks.findingNextEmptyCell, options.delay)
+    puzzle = fillCells(
+        puzzle,
+        visualizerCallbacks.onCellPossibilitiesCallback,
+        visualizerCallbacks.onFoundCallback,
+    )
+
+    const squareToSolve = findNextEmptyCell(puzzle, visualizerCallbacks.findingNextEmptyCell)
 
     if (squareToSolve === null) {
         return puzzle
@@ -87,9 +88,10 @@ export async function solvePuzzle(
 
 
     const possibleValues = getCellsPossibleValues(puzzle, squareToSolve[0], squareToSolve[1])
-
+    console.log('possible values', possibleValues)
 
     for (let i = 0; i < possibleValues.length; i++) {
+        console.log('trying', possibleValues[i])
         let newPuzzleState = JSON.parse(JSON.stringify(puzzle))
         newPuzzleState[squareToSolve[0]][squareToSolve[1]] = possibleValues[i] as PossibleValue
 
@@ -100,32 +102,30 @@ export async function solvePuzzle(
 
         visualizerCallbacks.onFindPossibleValuesForCell(cellLocation, [possibleValues[i]])
 
-        const filledCells = await fillCells(
+        const filledCells = fillCells(
             newPuzzleState,
             visualizerCallbacks.onCellPossibilitiesCallback,
             visualizerCallbacks.onFoundCallback,
-            options.delay
         )
         let result = solvePuzzle(
             filledCells,
             visualizerCallbacks,
-            options
         )
         if (result !== null) {
+            console.log('solved', possibleValues[i])
             return result
         }
+        console.log('failed', possibleValues[i])
+        // puzzle[squareToSolve[0]][squareToSolve[1]] = 0;
     }
-
+    console.log('No solution found for cell', squareToSolve);
     return null
 }
 
 
-export async function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (cell: Sudoku.CellLocation) => void, delay: number = 5) {
+export function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (cell: Sudoku.CellLocation) => void) {
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
-            if (delay > 0) {
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
             onSquareCheck({
                 section: Math.floor(row / 3) * 3 + Math.floor(col / 3) + 1 as Sudoku.SectionLocation,
                 position: (row % 3) * 3 + col % 3 + 1 as Sudoku.GridLocation
@@ -138,16 +138,14 @@ export async function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (
     return null
 }
 
-export async function fillCells(
+export function fillCells(
     puzzle: SudokuPuzzle,
     callback: (cell: Sudoku.CellLocation) => void,
     callback2: (row:number, col:number, value: number) => void,
-    delay: number,
     loop = true,
 
 ) {
     const clonedPuzzle = JSON.parse(JSON.stringify(puzzle));
-    console.log('filling')
     while (true) {
         let found = false;
 
@@ -157,10 +155,6 @@ export async function fillCells(
                     section: Math.floor(i / 3) * 3 + Math.floor(j / 3) + 1 as Sudoku.SectionLocation,
                     position: (i % 3) * 3 + j % 3 + 1 as Sudoku.GridLocation
                 });
-                console.log('filling with delay', delay)
-                if (delay > 0) {
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
                 if (clonedPuzzle[i][j] !== 0) {
                     continue;
                 }

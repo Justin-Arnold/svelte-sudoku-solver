@@ -4,18 +4,19 @@ import { solvePuzzle, validateSolution, type Sudoku } from "$lib/sudoku";
 import BaseButton from "../components/BaseButton.svelte";
     import PuzzleBoard from "../components/PuzzleBoard.svelte";
 import PuzzleSection from '../components/PuzzleSection.svelte'
+    import Layout from "./+layout.svelte";
 
 
 export let puzzle: SudokuPuzzle = [
-    [7, 3, 0, 0, 0, 4, 0, 9, 0],
-    [8, 0, 2, 9, 7, 3, 0, 0, 0],
-    [9, 0, 1, 2, 0, 0, 3, 0, 0],
-    [0, 0, 0, 0, 4, 9, 1, 5, 7],
-    [0, 1, 3, 0, 5, 0, 9, 2, 0],
-    [5, 7, 9, 1, 2, 0, 0, 0, 0],
-    [0, 0, 7, 0, 0, 2, 6, 0, 3],
-    [0, 0, 0, 0, 3, 8, 2, 0, 5],
-    [0, 2, 0, 5, 0, 0, 0, 0, 0],
+    // [7, 3, 0, 0, 0, 4, 0, 9, 0],
+    // [8, 0, 2, 9, 7, 3, 0, 0, 0],
+    // [9, 0, 1, 2, 0, 0, 3, 0, 0],
+    // [0, 0, 0, 0, 4, 9, 1, 5, 7],
+    // [0, 1, 3, 0, 5, 0, 9, 2, 0],
+    // [5, 7, 9, 1, 2, 0, 0, 0, 0],
+    // [0, 0, 7, 0, 0, 2, 6, 0, 3],
+    // [0, 0, 0, 0, 3, 8, 2, 0, 5],
+    // [0, 2, 0, 5, 0, 0, 0, 0, 0],
     // [5, 0, 0, 0, 3, 8, 0, 0, 9],
     // [4, 0, 0, 0, 6, 0, 0, 0, 0],
     // [0, 3, 0, 0, 0, 0, 6, 0, 0],
@@ -25,6 +26,15 @@ export let puzzle: SudokuPuzzle = [
     // [0, 0, 4, 0, 0, 0, 0, 2, 0],
     // [0, 0, 0, 0, 9, 0, 0, 0, 3],
     // [6, 0, 0, 4, 7, 0, 0, 0, 1]
+    [0, 0, 8, 0, 0, 6, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 3, 9, 6],
+    [0, 0, 3, 0, 1, 0, 0, 0, 8],
+    [0, 5, 0, 2, 0, 0, 0, 1, 0],
+    [0, 0, 0, 6, 0, 1, 0, 0, 0],
+    [0, 4, 0, 0, 0, 9, 0, 7, 0],
+    [5, 0, 0, 0, 8, 0, 9, 0, 0],
+    [7, 9, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 9, 0, 0, 2, 0, 0]
 ];
 
 let initialState = JSON.parse(JSON.stringify(puzzle))
@@ -33,25 +43,34 @@ let solvedPuzzle: SudokuPuzzle | null
 let emptyCellFinder: Sudoku.CellLocation & {value: Sudoku.CellValue} = {section: 1, position: 1, value: 0}
 let solveFinder: Sudoku.CellLocation = {section: 1, position: 1}
 
+let visualizerQueue: Array<() => void> = []
+
 async function solve() {
-    solvedPuzzle = await solvePuzzle(
+    solvedPuzzle = solvePuzzle(
         puzzle,{
             findingNextEmptyCell: cell => { // RED LOCATION
-                emptyCellFinder.position = cell.position
-                emptyCellFinder.section = cell.section
+                visualizerQueue.push(() => {
+                    emptyCellFinder.position = cell.position
+                    emptyCellFinder.section = cell.section
+                })
             },
             onFindPossibleValuesForCell(cell, values) { //RED VALUE
-                emptyCellFinder.value = values[0]
+                visualizerQueue.push(() => {
+                    emptyCellFinder.value = values[0]
+                })
             },
             onCellPossibilitiesCallback: cell => { // BLUE LOCATION
-                console.log('ocp', cell)
-                solveFinder.position = cell.position
-                solveFinder.section = cell.section
+                visualizerQueue.push(() => {
+                    solveFinder.position = cell.position
+                    solveFinder.section = cell.section
+                })
             },
             onFoundCallback: (row: number, col: number, value) => { // UNKNOWN VALUE
-                puzzle[row][col] = value as Sudoku.CellValue
+                visualizerQueue.push(() => {
+                    puzzle[row][col] = value as Sudoku.CellValue
+                })
             }
-        },{delay}
+        }
     )
     if(solvedPuzzle === null) {
         alert("This puzzle is unsolvable")
@@ -59,7 +78,12 @@ async function solve() {
     else {
         if (validateSolution(initialState, solvedPuzzle)) {
             console.log("This puzzle is solved")
-            puzzle = solvedPuzzle
+            console.log(visualizerQueue)
+
+            for(let i = 0; i < visualizerQueue.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, delay))
+                visualizerQueue[i]()
+            }
         }
         else {
             console.log("This puzzle is not solved")
@@ -104,8 +128,8 @@ function setSpeed(speed: number) {
                     <p>Speed</p>
                 </div>
                 <div class="flex gap-4 justify-between w-full">
-                    <BaseButton text="slow"  onClick={() => setSpeed(1000)}></BaseButton>
-                    <BaseButton text="medium" onClick={() => setSpeed(100)}></BaseButton>
+                    <BaseButton text="slow"  onClick={() => setSpeed(100)}></BaseButton>
+                    <BaseButton text="medium" onClick={() => setSpeed(25)}></BaseButton>
                     <BaseButton text="fast" onClick={() => setSpeed(5)}></BaseButton>
                     <BaseButton text="instant" onClick={() => setSpeed(0)}></BaseButton>
                 </div>
