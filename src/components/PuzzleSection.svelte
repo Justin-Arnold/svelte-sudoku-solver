@@ -12,6 +12,6 @@
 
 <div class="grid grid-cols-3 border border-red-950/80 overflow-hidden">
     {#each PuzzleBoardSection.entries() as [location, cell]}
-        <PuzzleCell {cell} />
+        <PuzzleCell cell={cell} />
     {/each}
 </div>

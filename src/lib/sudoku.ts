@@ -19,7 +19,7 @@ export namespace Sudoku {
  */
 type SolvingEventHooks = {
     findingNextEmptyCell: (cell: Sudoku.CellLocation) => void,
-    onCellPossibilitiesCallback: (cell: Sudoku.CellLocation) => void,
+    onCellPossibilitiesCallback: (cell: Sudoku.CellLocation, possibilities: Sudoku.CellValue<"">[]) => void,
     onFoundCallback: (row: number, col: number, value: number) => void,
     onFindPossibleValuesForCell: (cell: Sudoku.CellLocation, values: Sudoku.CellValue[]) => void
 }
@@ -68,7 +68,7 @@ export function solvePuzzle(
     puzzle: Sudoku.Puzzle2D,
     visualizerCallbacks: SolvingEventHooks = {
         findingNextEmptyCell: cell => void 0,
-        onCellPossibilitiesCallback: cell => void 0,
+        onCellPossibilitiesCallback: (cell, possibilities) => void 0,
         onFoundCallback: () => {},
         onFindPossibleValuesForCell: () => {}
     },
@@ -140,7 +140,7 @@ export function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (cell: 
 
 export function fillCells(
     puzzle: SudokuPuzzle,
-    callback: (cell: Sudoku.CellLocation) => void,
+    callback: (cell: Sudoku.CellLocation, possibilities: Sudoku.CellValue<''>[]) => void,
     callback2: (row:number, col:number, value: number) => void,
     loop = true,
 
@@ -151,10 +151,7 @@ export function fillCells(
 
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
-                callback({
-                    section: Math.floor(i / 3) * 3 + Math.floor(j / 3) + 1 as Sudoku.SectionLocation,
-                    position: (i % 3) * 3 + j % 3 + 1 as Sudoku.GridLocation
-                });
+
                 if (clonedPuzzle[i][j] !== 0) {
                     continue;
                 }
@@ -167,6 +164,11 @@ export function fillCells(
                     found = true;
                     break
                 }
+
+                callback({
+                    section: Math.floor(i / 3) * 3 + Math.floor(j / 3) + 1 as Sudoku.SectionLocation,
+                    position: (i % 3) * 3 + j % 3 + 1 as Sudoku.GridLocation
+                }, possibleValues as Sudoku.CellValue<''>[]);
             }
             if (found) {
                 break

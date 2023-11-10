@@ -41,7 +41,7 @@ let initialState = JSON.parse(JSON.stringify(puzzle))
 let solvedPuzzle: SudokuPuzzle | null
 
 let emptyCellFinder: Sudoku.CellLocation & {value: Sudoku.CellValue} = {section: 1, position: 1, value: 0}
-let solveFinder: Sudoku.CellLocation = {section: 1, position: 1}
+let solveFinder: Sudoku.CellLocation & {possibilities: Sudoku.CellValue<"">[]}  = {section: 1, position: 1, possibilities: []}
 
 let visualizerQueue: Array<() => void> = []
 
@@ -59,10 +59,11 @@ async function solve() {
                     emptyCellFinder.value = values[0]
                 })
             },
-            onCellPossibilitiesCallback: cell => { // BLUE LOCATION
+            onCellPossibilitiesCallback: (cell, possibilities) => { // BLUE LOCATION
                 visualizerQueue.push(() => {
                     solveFinder.position = cell.position
-                    solveFinder.section = cell.section
+                    solveFinder.section = cell.section,
+                    solveFinder.possibilities = possibilities
                 })
             },
             onFoundCallback: (row: number, col: number, value) => { // UNKNOWN VALUE
@@ -117,7 +118,7 @@ function setSpeed(speed: number) {
     <div class="bg-[#fbf4f5] grow flex p-4">
         <div class="h-full grow bg-[#b7c7cc] rounded-lg grid place-items-center">
             <div class="p-4 h-[50vh] flex justify-center">
-                <PuzzleBoard {puzzle} emptyCellBeingChecked={emptyCellFinder} {solveFinder}/>
+                <PuzzleBoard {puzzle} emptyCellBeingChecked={emptyCellFinder} solveFinder={solveFinder}/>
             </div>
         </div>
         <div class="h-full flex flex-col justify-end items-center w-fit shrink-0">
