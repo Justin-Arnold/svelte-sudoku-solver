@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Sudoku } from "$lib/sudoku";
+    import type { PuzzleBoardCell } from "./PuzzleCell.svelte";
     import PuzzleSection, {type PuzzleBoardSection } from "./PuzzleSection.svelte";
 
     export let puzzle: Sudoku.Puzzle2D
@@ -7,21 +8,23 @@
     export let solveFinder: Sudoku.CellLocation & {possibilities: Sudoku.CellValue<"">[]}
 
     //watch and log emptyCellBeingChecked
-
-    $: getSectionsFromPuzzle = (puzzle: Sudoku.Puzzle2D): PuzzleBoardSection[] => {
+    $: getCellInSectionBeingCheckedForPossibilities = (cellPositionOnBoard: Sudoku.CellLocation, sectionToCheck: Sudoku.GridLocation): Sudoku.GridLocation => {
+        return 1
+    }
+    $: getSectionsFromPuzzle = (puzzle: Sudoku.Puzzle2D): Map<Sudoku.GridLocation, PuzzleBoardSection> => {
         let rowStart = 0
         let rowEnd = 0
         let colStart = 0
         let colEnd = 0
 
-        let sections: PuzzleBoardSection[] = [
-            new Map(), new Map(), new Map(), new Map(), new Map(), new Map(), new Map(), new Map(), new Map()
-        ]
+        const sections = new Map<Sudoku.GridLocation, PuzzleBoardSection>()
+        const sectionLocations: Sudoku.GridLocation[] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-        sections.forEach((section, index) => {
-            const sectionLocation = index + 1
 
-            switch(sectionLocation) {
+
+
+        sectionLocations.forEach((location) => {
+            switch(location) {
                 case 1:
                     rowStart = 0
                     rowEnd = 2
@@ -79,18 +82,21 @@
             }
 
             let cellIndex = 1
+            const cells = new Map<Sudoku.GridLocation, Pick<PuzzleBoardCell, 'value' | 'possibilities' | 'isOriginal'>>()
+
             for(let row = rowStart; row <= rowEnd; row++) {
                 for(let col = colStart; col <= colEnd; col++) {
-                    section.set(cellIndex as Sudoku.GridLocation, {
-                        value: emptyCellBeingChecked.section === sectionLocation && emptyCellBeingChecked.position === cellIndex ? emptyCellBeingChecked.value ? emptyCellBeingChecked.value : puzzle[row][col] || '' : puzzle[row][col] || '',
-                        beingCheckedIfEmpty: emptyCellBeingChecked.section === sectionLocation && emptyCellBeingChecked.position === cellIndex,
-                        beingCheckedForPossibilities: solveFinder.section === sectionLocation && solveFinder.position === cellIndex,
-                        possibilities: solveFinder.section === sectionLocation && solveFinder.position === cellIndex ? solveFinder.possibilities : [],
+                    cells.set
+                    cells.set(cellIndex as Sudoku.GridLocation, {
+                        value: puzzle[row][col] || '',
+                        possibilities: solveFinder.section === location && solveFinder.position === cellIndex ? solveFinder.possibilities : [],
                         isOriginal: puzzle[row][col] !== 0
                     })
                     cellIndex +=1
                 }
             }
+
+            sections.set(location, cells)
         })
 
         return sections
@@ -99,8 +105,12 @@
 
 <div class="h-auto max-w-full aspect-square bg-[#ecdad3] shadow-2xl shadow-black/70 border-[8px] border-red-950/20 rounded">
     <div class="grid grid-cols-3 max-w-full h-auto aspect-square shadow-inner shadow-black/30">
-        {#each getSectionsFromPuzzle(puzzle) as section}
-            <PuzzleSection PuzzleBoardSection={section} />
+        {#each getSectionsFromPuzzle(puzzle) as [location, section]}
+            <PuzzleSection
+                puzzleBoardSection={section}
+                cellBeingCheckedForPossibilities={getCellInSectionBeingCheckedForPossibilities(emptyCellBeingChecked, location)}
+                cellBeingCheckedIfEmpty={getCellInSectionBeingCheckedForPossibilities(emptyCellBeingChecked, location)}
+            />
         {/each}
     </div>
 </div>
