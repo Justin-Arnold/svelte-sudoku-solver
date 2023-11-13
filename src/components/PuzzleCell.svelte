@@ -1,10 +1,10 @@
 <script lang="ts" context="module">
     export type PuzzleBoardCell = {
-        value: Sudoku.CellValue<''>
-        beingCheckedIfEmpty: boolean,
         beingCheckedForPossibilities: boolean,
-        possibilities: Array<Sudoku.CellValue<''>>,
+        beingCheckedIfEmpty: boolean,
         isOriginal: boolean,
+        possibilities: Array<Sudoku.CellValue<''>>,
+        value: Sudoku.CellValue<''>
     };
 </script>
 
