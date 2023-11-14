@@ -8,9 +8,14 @@
     export let solveFinder: Sudoku.CellLocation & {possibilities: Sudoku.CellValue<"">[]}
 
     //watch and log emptyCellBeingChecked
-    $: getCellInSectionBeingCheckedForPossibilities = (cellPositionOnBoard: Sudoku.CellLocation, sectionToCheck: Sudoku.GridLocation): Sudoku.GridLocation => {
-        return 1
+    $: getCellInSectionBeingCheckedForPossibilities = (cellPositionOnBoard: Sudoku.CellLocation, sectionToCheck: Sudoku.GridLocation): Sudoku.GridLocation | null => {
+        return cellPositionOnBoard.section === sectionToCheck ? cellPositionOnBoard.position : null
     }
+
+    $: getCellInSectionBeingCheckedIfEmpty = (cellPositionOnBoard: Sudoku.CellLocation, sectionToCheck: Sudoku.GridLocation): Sudoku.GridLocation | null => {
+        return cellPositionOnBoard.section === sectionToCheck ? cellPositionOnBoard.position : null
+    }
+
     $: getSectionsFromPuzzle = (puzzle: Sudoku.Puzzle2D): Map<Sudoku.GridLocation, PuzzleBoardSection> => {
         let rowStart = 0
         let rowEnd = 0
@@ -108,8 +113,8 @@
         {#each getSectionsFromPuzzle(puzzle) as [location, section]}
             <PuzzleSection
                 puzzleBoardSection={section}
-                cellBeingCheckedForPossibilities={getCellInSectionBeingCheckedForPossibilities(emptyCellBeingChecked, location)}
-                cellBeingCheckedIfEmpty={getCellInSectionBeingCheckedForPossibilities(emptyCellBeingChecked, location)}
+                cellBeingCheckedForPossibilities={getCellInSectionBeingCheckedForPossibilities(solveFinder, location)}
+                cellBeingCheckedIfEmpty={getCellInSectionBeingCheckedIfEmpty(emptyCellBeingChecked, location)}
             />
         {/each}
     </div>
