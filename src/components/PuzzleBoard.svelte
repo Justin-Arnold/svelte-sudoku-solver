@@ -16,7 +16,14 @@
         return cellPositionOnBoard.section === sectionToCheck ? cellPositionOnBoard.position : null
     }
 
+    let originalPuzzle: Sudoku.Puzzle2D | undefined = undefined;
+
+
     $: getSectionsFromPuzzle = (puzzle: Sudoku.Puzzle2D): Map<Sudoku.GridLocation, PuzzleBoardSection> => {
+        if (originalPuzzle === undefined) {
+            originalPuzzle = JSON.parse(JSON.stringify(puzzle))
+        }
+
         let rowStart = 0
         let rowEnd = 0
         let colStart = 0
@@ -95,7 +102,7 @@
                     cells.set(cellIndex as Sudoku.GridLocation, {
                         value: puzzle[row][col] || '',
                         possibilities: solveFinder.section === location && solveFinder.position === cellIndex ? solveFinder.possibilities : [],
-                        isOriginal: puzzle[row][col] !== 0
+                        isOriginal: originalPuzzle[row][col] !== 0 
                     })
                     cellIndex +=1
                 }
