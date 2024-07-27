@@ -1,5 +1,6 @@
 type FixedLengthArray<T, L extends number> = [T, ...T[]] & { length: L };
 type GridLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
 export namespace Sudoku {
     export type GridLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
     export type CellValue<BlankValue = 0> = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | BlankValue;
@@ -123,13 +124,15 @@ export function solvePuzzle(
 }
 
 
-export function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (cell: Sudoku.CellLocation) => void) {
+export function findNextEmptyCell(puzzle: Sudoku.Puzzle2D, onSquareCheck?: (cell: Sudoku.CellLocation) => void) {
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
-            onSquareCheck({
-                section: Math.floor(row / 3) * 3 + Math.floor(col / 3) + 1 as Sudoku.SectionLocation,
-                position: (row % 3) * 3 + col % 3 + 1 as Sudoku.GridLocation
-            });
+            if (onSquareCheck) {
+                onSquareCheck({
+                    section: Math.floor(row / 3) * 3 + Math.floor(col / 3) + 1 as Sudoku.SectionLocation,
+                    position: (row % 3) * 3 + col % 3 + 1 as Sudoku.GridLocation
+                });
+            }
             if (puzzle[row][col] === 0) {
                 return [row, col]
             }
@@ -139,9 +142,9 @@ export function findNextEmptyCell(puzzle: SudokuPuzzle2D, onSquareCheck: (cell: 
 }
 
 export function fillCells(
-    puzzle: SudokuPuzzle,
-    callback: (cell: Sudoku.CellLocation, possibilities: Sudoku.CellValue<''>[]) => void,
-    callback2: (row:number, col:number, value: number) => void,
+    puzzle: Sudoku.Puzzle2D,
+    callback?: (cell: Sudoku.CellLocation, possibilities: Sudoku.CellValue<''>[]) => void,
+    callback2?: (row:number, col:number, value: number) => void,
     loop = true,
 
 ) {
@@ -160,15 +163,20 @@ export function fillCells(
 
                 if (possibleValues.length === 1) {
                     clonedPuzzle[i][j] = possibleValues.pop();
-                    callback2(i, j, clonedPuzzle[i][j]);
+                    if (callback2) {
+                        callback2(i, j, clonedPuzzle[i][j]);
+                    }
                     found = true;
                     break
                 }
-
-                callback({
-                    section: Math.floor(i / 3) * 3 + Math.floor(j / 3) + 1 as Sudoku.SectionLocation,
-                    position: (i % 3) * 3 + j % 3 + 1 as Sudoku.GridLocation
-                }, possibleValues as Sudoku.CellValue<''>[]);
+                
+                if (callback) {
+                    callback({
+                        section: Math.floor(i / 3) * 3 + Math.floor(j / 3) + 1 as Sudoku.SectionLocation,
+                        position: (i % 3) * 3 + j % 3 + 1 as Sudoku.GridLocation
+                    }, possibleValues as Sudoku.CellValue<''>[]);
+                }
+                
             }
             if (found) {
                 break
@@ -183,7 +191,7 @@ export function fillCells(
     return clonedPuzzle;
 }
 
-export function validateSolution(initialPuzzle: SudokuPuzzle, solvedPuzzle: SudokuPuzzle) {
+export function validateSolution(initialPuzzle: Sudoku.Puzzle2D, solvedPuzzle: Sudoku.Puzzle2D) {
     for (let i = 0; i < 9; i++) {
         for (let j = 0; j < 9; j++) {
             if (initialPuzzle[i][j] !== 0 && initialPuzzle[i][j] !== solvedPuzzle[i][j]) {

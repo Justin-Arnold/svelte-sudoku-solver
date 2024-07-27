@@ -1,5 +1,5 @@
 import { test, expect, describe, beforeEach } from 'vitest';
-import { solvePuzzle, findNextZero, getCellPossibleValues, fillCells, validateSolution  } from './sudoku';
+import { solvePuzzle, getCellsPossibleValues, fillCells, validateSolution, findNextEmptyCell  } from './sudoku';
 import type { SudokuPuzzle } from './sudoku';
 
 export let startState: SudokuPuzzle = [
@@ -53,13 +53,13 @@ beforeEach(() => {
 })
 
 test('can find next zero', () => {
-    expect(findNextZero(startState)).toEqual([0, 1]);
+    expect(findNextEmptyCell(startState)).toEqual([0, 1]);
 })
 
 test('can find possible values for a given cell', () => {
-    expect(getCellPossibleValues(startState, 0, 2)).toEqual([5, 6]);
-    expect(getCellPossibleValues(startState, 1, 4)).toEqual([]);
-    expect(getCellPossibleValues(startState, 7, 7)).toEqual([1,4,7])
+    expect(getCellsPossibleValues(startState, 0, 2)).toEqual([5, 6]);
+    expect(getCellsPossibleValues(startState, 1, 4)).toEqual([]);
+    expect(getCellsPossibleValues(startState, 7, 7)).toEqual([1,4,7])
 })
 
 test('Will return an already solved puzzle'), () => {
