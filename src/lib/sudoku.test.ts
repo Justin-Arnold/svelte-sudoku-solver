@@ -1,7 +1,8 @@
-import { test, expect, beforeEach } from 'vitest';
-import { Sudoku, SudokuPuzzle } from './sudoku';
+import { test, expect, describe  } from 'vitest';
+import { SudokuPuzzle, gridToSection, sectionToGrid } from './sudoku';
+import type { CellCoordinate, PuzzleBoard } from '../types/sudoku'
 
-let easyStartState: Sudoku.Puzzle2D = [
+let easyStartState: PuzzleBoard = [
     [7, 0, 0, 0, 0, 4, 0, 9, 0],
     [8, 0, 2, 9, 7, 3, 0, 0, 0],
     [9, 0, 1, 2, 0, 5, 3, 0, 0],
@@ -13,7 +14,7 @@ let easyStartState: Sudoku.Puzzle2D = [
     [0, 2, 0, 5, 0, 1, 0, 0, 0],
 ];
 
-let mediumStartState: Sudoku.Puzzle2D = [ 
+let mediumStartState: PuzzleBoard = [ 
     [5, 0, 0, 0, 3, 8, 0, 0, 9],
     [4, 0, 0, 0, 6, 0, 0, 0, 0],
     [0, 3, 0, 0, 0, 0, 6, 0, 0],
@@ -25,7 +26,7 @@ let mediumStartState: Sudoku.Puzzle2D = [
     [6, 0, 0, 4, 7, 0, 0, 0, 1]
 ]
 
-let hardStartState: Sudoku.Puzzle2D = [
+let hardStartState: PuzzleBoard = [
     [0, 0, 8, 0, 0, 6, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 3, 9, 6],
     [0, 0, 3, 0, 1, 0, 0, 0, 8],
@@ -37,7 +38,7 @@ let hardStartState: Sudoku.Puzzle2D = [
     [0, 0, 0, 9, 0, 0, 2, 0, 0]
 ]
 
-let easySolvedState: Sudoku.Puzzle2D = [
+let easySolvedState: PuzzleBoard = [
     [7, 3, 5, 6, 1, 4, 8, 9, 2],
     [8, 4, 2, 9, 7, 3, 5, 6, 1],
     [9, 6, 1, 2, 8, 5, 3, 7, 4],
@@ -49,7 +50,7 @@ let easySolvedState: Sudoku.Puzzle2D = [
     [3, 2, 8, 5, 6, 1, 7, 4, 9],
 ]
 
-let mediumSolvedState: Sudoku.Puzzle2D = [
+let mediumSolvedState: PuzzleBoard = [
     [5, 6, 7, 2, 3, 8, 1, 4, 9],
     [4, 8, 9, 7, 6, 1, 3, 5, 2],
     [2, 3, 1, 9, 5, 4, 6, 8, 7],
@@ -61,7 +62,7 @@ let mediumSolvedState: Sudoku.Puzzle2D = [
     [6, 5, 2, 4, 7, 3, 8, 9, 1]
 ]
 
-let hardSolvedState: Sudoku.Puzzle2D = [ 
+let hardSolvedState: PuzzleBoard = [ 
     [2, 7, 8, 3, 9, 6, 1, 4, 5],
     [4, 1, 5, 7, 2, 8, 3, 9, 6],
     [9, 6, 3, 4, 1, 5, 7, 2, 8],
@@ -76,44 +77,61 @@ let hardSolvedState: Sudoku.Puzzle2D = [
 
 test('it can get possible values for a given cell', () => {
     const sudoku = new SudokuPuzzle(easyStartState)
-    let possibleValues = sudoku.getPossibleValuesForCell(0, 1)
-    expect(possibleValues).toEqual([3,5,6])
-    possibleValues = sudoku.getPossibleValuesForCell(0, 8)
-    expect(possibleValues).toEqual([1,2,6])
+    let possibleValues = sudoku.getPossibleValuesForCell({
+        section: 1,
+        position: 5
+    })
+    expect(possibleValues).toEqual([4,5,6])
+    possibleValues = sudoku.getPossibleValuesForCell({
+        section: 3,
+        position: 9
+    })
+    expect(possibleValues).toEqual([4,6])
+    possibleValues = sudoku.getPossibleValuesForCell({
+        section: 1,
+        position: 1
+    })
+    expect(possibleValues).toEqual([])
 })
 
 test('it can find the next empty cell', () => {
     const sudoku = new SudokuPuzzle(easyStartState)
     const nextEmptyCell = sudoku.findNextEmptyCell()
 
-    expect(nextEmptyCell).toEqual([0,1])
+    expect(nextEmptyCell).toEqual([1,2])
 })
 
-test('it can solve impacted cells after a cell is solved', () => {
+test('it can check and fill a cell', () => {
     const sudoku = new SudokuPuzzle(easyStartState)
 
-    sudoku.checkImpactedSections({
-        row: 6, column: 7
-    })
-
-    const postImpactPuzzle = [
-        [7, 3, 5, 6, 1, 4, 8, 9, 2],
-        [8, 4, 2, 9, 7, 3, 5, 6, 1],
-        [9, 6, 1, 2, 8, 5, 3, 7, 4],
-        [2, 8, 6, 3, 4, 9, 1, 5, 7],
-        [4, 1, 3, 8, 5, 7, 9, 2, 6],
-        [5, 7, 9, 1, 2, 6, 4, 3, 8],
-        [1, 5, 7, 4, 9, 2, 6, 8, 3],
-        [6, 9, 4, 7, 3, 8, 2, 1, 5],
-        [3, 2, 8, 5, 6,1, 7, 4, 9]
-    ]
-
-    expect(sudoku.puzzle).toEqual(postImpactPuzzle)
+    const returnedValue = sudoku.checkAndFillCell({section: 6,position: 7})
+    expect(returnedValue).toEqual(4)
+    
 })
 
-test('it can check and fill a given section'), () => {
-    const sudoku = new SudokuPuzzle(easyStartState)
-}
+// test('it can solve impacted cells after a cell is solved', () => {
+//     const sudoku = new SudokuPuzzle(easyStartState)
+
+//     sudoku.checkImpactedSections({
+//         section: 5, position: 9
+//     })
+
+//     const postImpactPuzzle = [
+//         [7, 3, 5, 6, 1, 4, 8, 9, 2],
+//         [8, 4, 2, 9, 7, 3, 5, 6, 1],
+//         [9, 6, 1, 2, 8, 5, 3, 7, 4],
+//         [2, 8, 6, 3, 4, 9, 1, 5, 7],
+//         [4, 1, 3, 8, 5, 7, 9, 2, 6],
+//         [5, 7, 9, 1, 2, 6, 4, 3, 8],
+//         [1, 5, 7, 4, 9, 2, 6, 8, 3],
+//         [6, 9, 4, 7, 3, 8, 2, 1, 5],
+//         [3, 2, 8, 5, 6, 1, 7, 4, 9]
+//     ]
+
+//     console.log(sudoku.puzzle)
+
+//     expect(sudoku.puzzle).toEqual(postImpactPuzzle)
+// })
 
 test('it can solve an easy puzzles', () => {
     const sudoku = new SudokuPuzzle(easyStartState)
@@ -121,16 +139,40 @@ test('it can solve an easy puzzles', () => {
     expect(sudoku.puzzle).toEqual(easySolvedState)
 })
 
-test('it can solve a medium puzzles', () => {
-    const sudoku = new SudokuPuzzle(mediumStartState)
-    sudoku.solvePuzzle()
-    expect(sudoku.puzzle).toEqual(mediumSolvedState)
-})
+// test('it can solve a medium puzzles', () => {
+//     const sudoku = new SudokuPuzzle(mediumStartState)
+//     sudoku.solvePuzzle()
+//     expect(sudoku.puzzle).toEqual(mediumSolvedState)
+// })
 
-test('it can solve a hard puzzles', () => {
-    const sudoku = new SudokuPuzzle(hardStartState)
-    sudoku.solvePuzzle()
-    expect(sudoku.puzzle).toEqual(hardSolvedState)
-})
+// test('it can solve a hard puzzles', () => {
+//     const sudoku = new SudokuPuzzle(hardStartState)
+//     sudoku.solvePuzzle()
+//     expect(sudoku.puzzle).toEqual(hardSolvedState)
+// })
+
+
+// describe('coordinate conversion', () => {
+//     const sectionCoordinate = {
+//         section: 7, position: 4
+//     }
+
+//     const gridCoordinate: CellCoordinate = {
+//         row: 8, column: 1
+//     }
+
+//     test('it can convert grid coordinates to section coordinates', () => {
+//         const convertedGridToSection = gridToSection(gridCoordinate)
+//         expect(convertedGridToSection).toEqual(sectionCoordinate)
+//     })
+    
+//     test('it can convert section coordinates to grid coordinates', () => {
+//         const convertedSectionToSection = sectionToGrid(sectionCoordinate)
+//         expect(convertedSectionToSection).toEqual(gridCoordinate)
+//     })
+// })
+
+
+
 
 

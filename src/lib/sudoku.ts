@@ -1,204 +1,348 @@
 import { clone } from './utils'
+import type { 
+    CellLocation,
+    CellValue,
+    PuzzleBoard,
+    GridLocation,
+    CellCoordinate
+} from '../types/sudoku'
 
-type FixedLengthArray<T, L extends number> = [T, ...T[]] & { length: L };
-type GridLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-
-export namespace Sudoku {
-    export type GridLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-    export type Coordinate = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
-    export type CellValue<BlankValue = 0> = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | BlankValue;
-    export type CellLocation = {
-        section: SectionLocation,
-        position: GridLocation,
-    }
-    export type Row2D = [CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue, CellValue];
-    export type RowLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-    export type ColumnLocation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-    export type Section2D = FixedLengthArray<CellValue, 9>
-    export type SectionLocation = GridLocation
-    export type Puzzle2D = [Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D, Row2D];
-}
+import { SolveMethod, GridLocations } from '../types/sudoku' 
 
 /**
  *  These hooks are meant to visualize the solving process. They are not required for the solver to work.
  *  Each hook takes a callback where the arguments are the information about the step that is being taken.
  */
 type SolvingEventHooks = {
-    findingNextEmptyCell: (cell: Sudoku.CellLocation) => void,
-    onCellPossibilitiesCallback: (cell: Sudoku.CellLocation, possibilities: Sudoku.CellValue<"">[]) => void,
-    onFoundCallback: (row: number, col: number, value: number) => void,
-    onFindPossibleValuesForCell: (cell: Sudoku.CellLocation, values: Sudoku.CellValue[]) => void
+    onFindEmptyCell?: (cell: CellLocation) => void,
+    onCheckCell?: (cell: CellLocation) => void,
+    onCellPossibilitiesCallback?: (cell: CellLocation, possibilities: CellValue<"">[]) => void,
+    onFound?: (row: number, col: number, value: number) => void,
+    onFindPossibleValuesForCell?: (cell: CellLocation, values: CellValue[]) => void
 }
 
 export class SudokuPuzzle {
-    puzzle: Sudoku.Puzzle2D
-    changeStack: {row: number, col: number, value: number}[]
+    puzzle: PuzzleBoard
+    private changeStack: {row: GridLocation, col: GridLocation, value: CellValue}[]
+    private callbacks: SolvingEventHooks
+    private solveMethod: SolveMethod
 
-    constructor(puzzle: Sudoku.Puzzle2D) {
+    constructor(
+        puzzle: PuzzleBoard,
+        eventHooks: SolvingEventHooks = {},
+        solveMethod: SolveMethod = SolveMethod.PROPAGATION
+    ) {
         this.puzzle = clone(puzzle)
+        this.callbacks = eventHooks
+        this.solveMethod = solveMethod
         this.changeStack = []
     }
 
     solvePuzzle(): boolean {
         this.fillCells()
         const squareToSolve = this.findNextEmptyCell()
-
         if (squareToSolve === null) {
             return true // Puzzle is solved
         }
-
         const [row, col] = squareToSolve
-        const possibleValues = this.getPossibleValuesForCell(row, col)
-
+        const cellLocation = gridToSection({row, column: col})
+        const possibleValues = this.getPossibleValuesForCell(cellLocation)
         for (const value of possibleValues) {
             const stackDepth = this.changeStack.length
-            
             // Try this value
-            this.setCell(row, col, value as PossibleValue)
-
+            this.setCell(row, col, value)
             // Recursively solve the rest
             if (this.solvePuzzle()) {
                 return true // Solution found
             }
-
             // If we're here, this value didn't work. Undo all changes since this guess
             this.undoToDepth(stackDepth)
         }
-
         return false // No solution found
     }
 
-    fillCells() {
-        let changed = true;
-        while (changed) {
-            changed = false;
-            for (let row = 0; row < 9; row++) {
-                for (let col = 0; col < 9; col++) {
-                    if (this.puzzle[row][col] === 0) {
-                        const possibleValues = this.getPossibleValuesForCell(row, col);
-                        if (possibleValues.length === 1) {
-                            this.setCell(row, col, possibleValues[0] as PossibleValue);
-                            changed = true;
-                        }
-                    }
-                }
-            }
-        }
+    private fillCells() {
+        let changed: boolean;
+        do {
+            changed = this.fillOneCellIfPossible();
+        } while (changed);
     }
 
-    setCell(row: number, col: number, value: PossibleValue) {
-        this.changeStack.push({row, col, value: this.puzzle[row][col]})
-        this.puzzle[row][col] = value
-        this.checkImpactedSections({row, column: col})
+    private fillOneCellIfPossible(): boolean {
+        for (const [row, column] of eachCellInPuzzle) {
+            this.notifyCheckCell(row, column)
+            if (this.fillCellIfEmpty({row, column})) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private notifyCheckCell(row: GridLocation, col: GridLocation) {
+        if (this.callbacks.onCheckCell) {
+            const coordinates = gridToSection({row, column: col});
+            this.callbacks.onCheckCell({
+                section: coordinates.section,
+                position: coordinates.position
+            });
+        }
+    }
+    
+    private fillCellIfEmpty(cellLocation: CellCoordinate): boolean {
+        const {row, column} = cellLocation 
+        if (this.puzzle[row-1][column-1] !== 0) {
+            return false;
+        }
+        const cellPosition = gridToSection({row, column})
+        const possibleValues = this.getPossibleValuesForCell(cellPosition);
+        if (possibleValues.length === 1) {
+            this.setCell(row, column, possibleValues[0]);
+            return true;  // We filled this cell
+        }
+        return false;  // We couldn't fill this cell
+    }
+
+    setCell(row: GridLocation, col:GridLocation, value: CellValue) {
+        if (this.callbacks.onFound) {
+            this.callbacks.onFound(row, col, value)
+        }
+        this.changeStack.push({row, col, value: this.puzzle[row-1][col-1]})
+        this.puzzle[row-1][col-1] = value
+        if (this.solveMethod === SolveMethod.PROPAGATION) {
+            const cellLocation = gridToSection({row, column: col})
+            this.checkImpactedSections(cellLocation)
+        }
     }
 
     undoToDepth(depth: number) {
         while (this.changeStack.length > depth) {
             const change = this.changeStack.pop()!
-            this.puzzle[change.row][change.col] = change.value
+            this.puzzle[change.row-1][change.col-1] = change.value
         }
     }
 
-    getPossibleValuesForCell(
-        row: Sudoku.Coordinate,
-        column: Sudoku.Coordinate
-    ): Sudoku.CellValue[] {
-        if (this.puzzle[row][column] !== 0) {
+    getPossibleValuesForCell(cellLocation: CellLocation): CellValue[] {
+        const coordinates = sectionToGrid(cellLocation)
+        if (this.puzzle[coordinates.row-1][coordinates.column-1] !== 0) {
             return []
         }
-    
-        let vals = new Set<Sudoku.CellValue>([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    
+        let vals = new Set<CellValue>([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
         for (let i = 0; i < 9; i++) {
-            vals.delete(this.puzzle[row][i])
-            vals.delete(this.puzzle[i][column])
+            vals.delete(this.puzzle[coordinates.row-1][i])
+            vals.delete(this.puzzle[i][coordinates.column-1])
         }
-    
-        const i = Math.floor(row / 3) * 3
-        const j = Math.floor(column / 3) * 3
-    
+        const i = Math.floor(coordinates.row / 3) * 3
+        const j = Math.floor(coordinates.column / 3) * 3
         for (let x = i; x < i + 3; x++) {
             for (let y = j; y < j + 3; y++) {
                 vals.delete(this.puzzle[x][y])
             }
         }
-    
         return [...vals]
     }
 
     findNextEmptyCell() {
-        for (let row = 0; row < 9; row++) {
-            for (let col = 0; col < 9; col++) {
-                if (this.puzzle[row][col] === 0) {    
-                    return [row, col] as [Sudoku.Coordinate, Sudoku.Coordinate]
+        for (const [row, column] of eachCellInPuzzle) {
+            if (this.puzzle[row-1][column-1] === 0) { 
+                if (this.callbacks.onFindEmptyCell) {
+                    const coordinates = gridToSection({row, column})
+                    this.callbacks.onFindEmptyCell(coordinates)
                 }
+                return [row, column]
             }
         }
         return null
     }
 
-    checkImpactedSections(solvedCellLocation: {row: Sudoku.RowLocation, column: Sudoku.ColumnLocation}) {
-        this.checkAndFillRow(solvedCellLocation.row)
-        this.checkAndFillColumn(solvedCellLocation.column)
-        this.checkAndFillSection(solvedCellLocation)
+    checkImpactedSections(cellLocation: CellLocation): void {
+        this.checkAndFillRow(cellLocation)
+        this.checkAndFillColumn(cellLocation)
+        this.checkAndFillSection(cellLocation)
     }
 
-    checkAndFillSection(location: {row: Sudoku.RowLocation, column: Sudoku.ColumnLocation}) {
-        const row = Math.floor(location.row / 3) * 3 as GridLocation
-        const column = Math.floor(location.column / 3) * 3 as GridLocation
+    checkAndFillSection(coordinates: CellLocation) {
+        for (const location of eachCellInSection(coordinates)) {
+            if (this.callbacks.onCheckCell) {      
+                this.callbacks.onCheckCell(location)
+            }
 
-        for (let x = row; x < row + 3; x++) {
-            for (let y = column; y < column + 3; y++) {
-                const result = this.checkAndFillCell(x, y)
-                if (!!result) {
-                    this.checkImpactedSections({
-                        row: x,
-                        column: y
-                    })
-                }
+            const result = this.checkAndFillCell(location)
+            if (!!result) {
+                this.checkImpactedSections(location)
             }
         }
     }
 
-    checkAndFillRow(row: Sudoku.RowLocation) {
-        for (let column = 0; column < 9; column++) {
-            const result = this.checkAndFillCell(row, column)
-            if (!!result) {
-                this.checkImpactedSections({
-                    row,
-                    column
+    checkAndFillRow(cellLocation: CellLocation) {
+        const { row } = sectionToGrid(cellLocation)
+        for (const column of eachCellInColumn) {
+            const coordinates = gridToSection({row, column})
+            if (this.callbacks.onCheckCell) {
+                this.callbacks.onCheckCell({
+                    section: coordinates.section,
+                    position: coordinates.position
                 })
             }
-        }
-    }
-
-    checkAndFillColumn(column: Sudoku.ColumnLocation) {
-        for (let row = 0; row < 9; row++) {
-            const result = this.checkAndFillCell(row, column)
+            const result = this.checkAndFillCell(cellLocation)
             if (!!result) {
-                this.checkImpactedSections({
-                    row,
-                    column
-                })
+                this.checkImpactedSections(coordinates)
             }
         }
     }
 
-    private checkAndFillCell(row: Sudoku.GridLocation, column: Sudoku.GridLocation): false | {row: Sudoku.RowLocation, column: Sudoku.ColumnLocation} {
-        const cellToCheck = this.puzzle[row][column]
+    checkAndFillColumn(cellLocation: CellLocation) {
+        const { column } = sectionToGrid(cellLocation)
+        for (const row of eachCellInRow) {
+            const coordinates = gridToSection({row, column})
+            if (this.callbacks.onCheckCell) {
+                
+                this.callbacks.onCheckCell({
+                    section: coordinates.section,
+                    position: coordinates.position
+                })
+            }
+            const result = this.checkAndFillCell(cellLocation)
+            if (!!result) {
+                this.checkImpactedSections(coordinates)
+            }
+        }
+    }
+
+    checkAndFillCell(cellLocation: CellLocation): false | CellValue {
+        const { row, column } = sectionToGrid(cellLocation)
+        const cellToCheck = this.puzzle[row-1][column-1]
         if (cellToCheck !== 0) {
             return false
         }
         
-        const possibleValues = this.getPossibleValuesForCell(row, column)
+        const possibleValues = this.getPossibleValuesForCell(cellLocation)
         if (possibleValues.length === 1) {
-            this.setCell(row, column, possibleValues[0] as PossibleValue)
-            return {
-                row: row as Sudoku.RowLocation,
-                column: column as Sudoku.ColumnLocation
-            }
+            this.setCell(row, column, possibleValues[0])
+            return possibleValues[0]
         }
         return false
     }
-
 }
+
+export const examplePuzzles: Record<'easy' | 'medium' | 'hard', PuzzleBoard> = {
+    easy: [
+        [7, 3, 0, 0, 0, 4, 0, 9, 0],
+        [8, 0, 2, 9, 7, 3, 0, 0, 0],
+        [9, 0, 1, 2, 0, 0, 3, 0, 0],
+        [0, 0, 0, 0, 4, 9, 1, 5, 7],
+        [0, 1, 3, 0, 5, 0, 9, 2, 0],
+        [5, 7, 9, 1, 2, 0, 0, 0, 0],
+        [0, 0, 7, 0, 0, 2, 6, 0, 3],
+        [0, 0, 0, 0, 3, 8, 2, 0, 5],
+        [0, 2, 0, 5, 0, 0, 0, 0, 0],
+    ],
+    medium: [
+        [5, 0, 0, 0, 3, 8, 0, 0, 9],
+        [4, 0, 0, 0, 6, 0, 0, 0, 0],
+        [0, 3, 0, 0, 0, 0, 6, 0, 0],
+        [1, 0, 5, 6, 0, 9, 0, 0, 4],
+        [0, 4, 0, 0, 0, 0, 0, 7, 0],
+        [9, 0, 0, 3, 0, 7, 5, 0, 8],
+        [0, 0, 4, 0, 0, 0, 0, 2, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 3],
+        [6, 0, 0, 4, 7, 0, 0, 0, 1]
+    ],
+    hard: [
+        [0, 0, 8, 0, 0, 6, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 3, 9, 6],
+        [0, 0, 3, 0, 1, 0, 0, 0, 8],
+        [0, 5, 0, 2, 0, 0, 0, 1, 0],
+        [0, 0, 0, 6, 0, 1, 0, 0, 0],
+        [0, 4, 0, 0, 0, 9, 0, 7, 0],
+        [5, 0, 0, 0, 8, 0, 9, 0, 0],
+        [7, 9, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 9, 0, 0, 2, 0, 0]
+    ]
+}
+
+function isGridLocation(num: number): num is GridLocation {
+    return num >= 1 && num <= 9;
+}
+
+export function gridToSection(coordinate: { row: GridLocation; column: GridLocation }): CellLocation {
+    const sectionRow = Math.floor((coordinate.row - 1) / 3);
+    const sectionColumn = Math.floor((coordinate.column - 1) / 3);
+    const sectionValue = sectionRow * 3 + sectionColumn + 1;
+    if (!isGridLocation(sectionValue)) throw new Error(`Invalid section value: ${sectionValue}`);
+    const section = sectionValue;
+
+    const cellRow = (coordinate.row - 1) % 3;
+    const cellColumn = (coordinate.column - 1) % 3;
+    const cellValue = cellRow * 3 + cellColumn + 1;
+    if (!isGridLocation(cellValue)) throw new Error(`Invalid cell value: ${cellValue}`);
+    const position = cellValue;
+
+    return { section, position };
+}
+
+export function sectionToGrid(cellLocation: CellLocation): CellCoordinate {
+    const { section, position }  = cellLocation
+    // Calculate the starting row and column of the section
+     const sectionRowStart = Math.floor((section - 1) / 3) * 3;
+     const sectionColumnStart = ((section - 1) % 3) * 3;
+ 
+     // Calculate the row and column within the section
+     const cellRowOffset = Math.floor((position - 1) / 3);
+     const cellColumnOffset = (position - 1) % 3;
+ 
+     // Calculate the absolute row and column in the grid
+     const row = sectionRowStart + cellRowOffset + 1;
+     const column = sectionColumnStart + cellColumnOffset + 1;
+ 
+     return { row, column } as { row: GridLocation, column: GridLocation};
+}
+
+
+enum TypeOfIteration {
+    IN_PUZZLE = 'in-puzzle',
+    IN_SECTION = 'in-section',
+    IN_ROW_COL = 'in-row-col'
+}
+
+const eachCellInPuzzle = {
+    *[Symbol.iterator](): Generator<[GridLocation, GridLocation]> {
+        for (const row of GridLocations) {
+            for (const column of GridLocations) {
+                yield [row, column];
+            }
+        }
+    }
+};
+
+const eachCellInRow = {
+    *[Symbol.iterator](): Generator<GridLocation> {
+        for (const row of GridLocations) {
+            yield row;
+        }
+    }
+};
+
+const eachCellInColumn = {
+    *[Symbol.iterator](): Generator<GridLocation> {
+        for (const col of GridLocations) {
+            yield col;
+        }
+    }
+};
+
+const eachCellInSection = (location: CellLocation) => ({
+    *[Symbol.iterator](): Generator<CellLocation> {
+
+        const startRow = 3 * Math.floor((location.section - 1) / 3) + 1;;
+        const startCol = 3 * (location.section % 3 || 3) - 2;
+
+        for (let row = startRow; row < startRow + 3; row++) {
+            for (let column = startCol; column < startCol +3; column++) {
+                const location = gridToSection({
+                    row, column
+                } as {row: GridLocation, column: GridLocation})
+                yield location;     
+            }
+        }
+    }
+});

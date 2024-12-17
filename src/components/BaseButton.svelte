@@ -1,33 +1,21 @@
 <script>
     export let text = '';
     export let onClick = () => {};
+    export let outlined = false
+
+    $: buttonClasses = () => {
+        const baseClasses = 'btn btn-primary rounded btn-sm'
+        const variantClasses = outlined
+            ? 'btn-outline'
+            : ''
+
+        return `${baseClasses} ${variantClasses}`
+    }
 </script>
 
-<button on:click={onClick} class="">
+<button 
+    on:click={onClick}
+    class={buttonClasses()}
+>
     {text}
 </button>
-
-<style>
-    button {
-        background-color: #f5eae6;
-        border: none;
-        color: rgba(black, .2);
-        padding: 12px 24px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-
-    button:hover {
-        background-color: #dacccc;
-    }
-
-    button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-</style>

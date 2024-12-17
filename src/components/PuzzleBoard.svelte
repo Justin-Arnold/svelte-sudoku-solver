@@ -16,7 +16,7 @@
         return cellPositionOnBoard.section === sectionToCheck ? cellPositionOnBoard.position : null
     }
 
-    let originalPuzzle: Sudoku.Puzzle2D | undefined = undefined;
+    let originalPuzzle: Sudoku.Puzzle2D;
 
 
     $: getSectionsFromPuzzle = (puzzle: Sudoku.Puzzle2D): Map<Sudoku.GridLocation, PuzzleBoardSection> => {
